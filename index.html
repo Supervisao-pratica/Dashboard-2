@@ -38,11 +38,24 @@
             box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
         }
 
-        /* Modal de Login (Forçado Visível por Padrão) */
+        /* Modal de Login */
         #authModal {
-            display: flex; /* Garante display flex inicialmente */
+            display: flex;
             backdrop-filter: blur(8px);
             background-color: rgba(255, 255, 255, 0.9);
+        }
+
+        /* Botões de Alternância de Escopo */
+        .scope-btn {
+            transition: all 0.2s ease;
+            border-bottom: 3px solid transparent;
+            opacity: 0.6;
+        }
+        .scope-btn.active {
+            opacity: 1;
+            border-bottom-color: var(--senac-orange);
+            background-color: #f8fafc;
+            color: var(--senac-blue);
         }
 
         /* Scrollbar */
@@ -88,18 +101,21 @@
                 <!-- Botões de Gerenciamento -->
                 <div class="mt-6 flex justify-between items-center px-2">
                     <button onclick="toggleAddUser(true)" class="text-xs text-senac-orange font-bold hover:underline flex items-center gap-1">
-                        <i data-lucide="plus-circle" class="w-3 h-3"></i> Cadastrar Novo
+                        <i data-lucide="plus-circle" class="w-3 h-3"></i> Manual (Navegador)
                     </button>
                     <button onclick="resetUsersToDefault()" class="text-[10px] text-slate-400 hover:text-red-500 hover:underline">
                         Restaurar Padrão
                     </button>
                 </div>
+                <p class="mt-4 text-[10px] text-slate-400 text-center px-4">
+                    Dica: Adicione uma aba chamada <strong>"Usuarios"</strong> na sua planilha Dados Gerais para carregar a equipe automaticamente.
+                </p>
             </div>
 
             <!-- Formulário Novo Usuário -->
             <div id="addUserForm" class="hidden">
                 <h3 class="text-sm font-bold text-slate-700 mb-4 flex items-center gap-2">
-                    <i data-lucide="user-plus" class="w-4 h-4 text-senac-orange"></i> Novo Cadastro
+                    <i data-lucide="user-plus" class="w-4 h-4 text-senac-orange"></i> Novo Cadastro Local
                 </h3>
                 
                 <div class="space-y-3">
@@ -134,40 +150,55 @@
     </div>
 
     <!-- Header -->
-    <header class="bg-white h-20 flex items-center justify-between px-8 border-b border-slate-200 flex-shrink-0 z-30 shadow-sm">
-        <div class="flex items-center gap-4">
-            <div class="flex flex-col select-none">
-                <div class="flex items-baseline leading-none">
-                    <span class="text-3xl font-extrabold text-senac-blue tracking-tight">Senac</span>
+    <header class="bg-white border-b border-slate-200 flex-shrink-0 z-30 shadow-sm flex flex-col">
+        <!-- Top Bar -->
+        <div class="h-16 flex items-center justify-between px-8">
+            <div class="flex items-center gap-4">
+                <div class="flex flex-col select-none">
+                    <div class="flex items-baseline leading-none">
+                        <span class="text-2xl font-extrabold text-senac-blue tracking-tight">Senac</span>
+                    </div>
+                    <div class="w-full h-1 bg-senac-orange mt-1 rounded-full"></div>
                 </div>
-                <div class="w-full h-1.5 bg-senac-orange mt-1 rounded-full"></div>
+                <div class="h-8 w-px bg-slate-200 mx-2"></div>
+                <div>
+                    <h1 class="font-bold text-sm text-slate-700">Painel de Supervisão</h1>
+                    <p class="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Gestão de Aprendizagem</p>
+                </div>
             </div>
-            <div class="h-10 w-px bg-slate-200 mx-2"></div>
-            <div>
-                <h1 class="font-bold text-lg text-slate-700">Painel de Supervisão</h1>
-                <p class="text-xs text-slate-400 font-medium uppercase tracking-wider">Gestão de Aprendizagem</p>
+
+            <div class="flex items-center gap-6">
+                <!-- Info Usuário -->
+                <div class="text-right hidden md:block">
+                    <p class="text-sm font-bold text-senac-blue" id="displayUserName">Visitante</p>
+                    <p class="text-[10px] text-slate-400 font-mono" id="displayUserRegion">Acesso Restrito</p>
+                </div>
+
+                <!-- Botão Upload (Manual e Auto) -->
+                <div class="flex items-center gap-2">
+                    <input type="file" id="fileInput" accept=".csv, .xlsx, .xlsm, .xls" class="hidden" onchange="processFile(this)">
+                    <button onclick="document.getElementById('fileInput').click()" class="group flex items-center gap-2 bg-slate-50 hover:bg-senac-blue hover:text-white text-slate-600 px-4 py-2 rounded-xl border border-slate-200 transition-all shadow-sm" title="Carregar Dados Gerais.xlsm">
+                        <i data-lucide="upload-cloud" class="w-4 h-4 text-senac-orange group-hover:text-white transition-colors"></i>
+                        <span id="btnUploadText" class="text-xs font-bold uppercase">Recarregar</span>
+                    </button>
+                    <div id="loadingSpinner" class="hidden"><div class="loader border-t-senac-blue"></div></div>
+                </div>
+                
+                <button onclick="logout()" class="p-2 hover:bg-red-50 text-slate-400 hover:text-red-500 rounded-lg transition-colors" title="Sair / Trocar Usuário">
+                    <i data-lucide="log-out" class="w-5 h-5"></i>
+                </button>
             </div>
         </div>
 
-        <div class="flex items-center gap-6">
-            <!-- Info Usuário -->
-            <div class="text-right hidden md:block">
-                <p class="text-sm font-bold text-senac-blue" id="displayUserName">Visitante</p>
-                <p class="text-[10px] text-slate-400 font-mono" id="displayUserRegion">Acesso Restrito</p>
-            </div>
-
-            <!-- Botão Upload (Manual e Auto) -->
-            <div class="flex items-center gap-2">
-                <input type="file" id="fileInput" accept=".csv, .xlsx, .xlsm, .xls" class="hidden" onchange="processFile(this)">
-                <button onclick="document.getElementById('fileInput').click()" class="group flex items-center gap-2 bg-slate-50 hover:bg-senac-blue hover:text-white text-slate-600 px-4 py-2.5 rounded-xl border border-slate-200 transition-all shadow-sm" title="Carregar Dados Gerais.xlsm">
-                    <i data-lucide="upload-cloud" class="w-4 h-4 text-senac-orange group-hover:text-white transition-colors"></i>
-                    <span id="btnUploadText" class="text-xs font-bold uppercase">Recarregar Dados</span>
-                </button>
-                <div id="loadingSpinner" class="hidden"><div class="loader border-t-senac-blue"></div></div>
-            </div>
-            
-            <button onclick="logout()" class="p-2 hover:bg-red-50 text-slate-400 hover:text-red-500 rounded-lg transition-colors" title="Sair / Trocar Usuário">
-                <i data-lucide="log-out" class="w-5 h-5"></i>
+        <!-- Navegação de Curso (Tabs) -->
+        <div class="flex px-8 bg-white gap-8 border-t border-slate-50">
+            <button onclick="switchScope('qualificacao')" id="btnScopeQualificacao" class="scope-btn active py-3 text-xs font-bold uppercase tracking-wide flex items-center gap-2">
+                <i data-lucide="book-open" class="w-4 h-4"></i>
+                Aprendizagem Qualificação
+            </button>
+            <button onclick="switchScope('tecnico')" id="btnScopeTecnico" class="scope-btn py-3 text-xs font-bold uppercase tracking-wide flex items-center gap-2">
+                <i data-lucide="wrench" class="w-4 h-4"></i>
+                Aprendizagem Técnica
             </button>
         </div>
     </header>
@@ -374,9 +405,18 @@
 
     <!-- SCRIPT CENTRAL -->
     <script>
-        // --- 0. INICIALIZAÇÃO CRÍTICA ---
+        // --- 0. VARIÁVEIS GLOBAIS ---
         
-        // LISTA DE REGIÕES CONHECIDAS (Para não ficar vazio antes de carregar o arquivo)
+        // Armazena os dados separadamente
+        let db = {
+            qualificacao: [],
+            tecnico: []
+        };
+        
+        // Define qual aba está ativa (padrão: qualificacao)
+        let currentScope = 'qualificacao';
+
+        // LISTA DE REGIÕES CONHECIDAS
         const PREDEFINED_REGIONS = [
             "APUCARANA", "CAMPO MOURÃO", "CASCAVEL", "CASTRO", "CORNÉLIO PROCÓPIO", "CURITIBA", 
             "FOZ DO IGUAÇU", "FRANCISCO BELTRÃO", "GUARAPUAVA", "IRATI", "IVAIPORÃ", 
@@ -385,7 +425,7 @@
             "SANTO ANTÔNIO DA PLATINA", "TOLEDO", "UMUARAMA", "UNIÃO DA VITÓRIA"
         ];
 
-        // Definição de Usuários Padrão (Fixo no Código)
+        // Usuários Padrão
         const DEFAULT_USERS = [
             { name: 'Gestor Geral', region: '', email: 'gestor@senac.br' },
             { name: 'Luciano', region: 'CAMPO MOURÃO', email: 'luciano.ramos@docente.pr.senac.br' },
@@ -395,6 +435,37 @@
 
         let currentUser = null;
         let users = [];
+
+        // Filtros e Paginação
+        let filteredData = [];
+        let currentPage = 1;
+        const itemsPerPage = 50;
+        let chartStatusInstance = null;
+        let chartRegiaoInstance = null;
+        let currentStatusFilter = 'all';
+
+        // --- 1. FUNÇÕES DE ESCOPO (Alternância de Abas) ---
+
+        function switchScope(scope) {
+            currentScope = scope;
+            
+            // Atualiza visual dos botões
+            document.getElementById('btnScopeQualificacao').classList.toggle('active', scope === 'qualificacao');
+            document.getElementById('btnScopeTecnico').classList.toggle('active', scope === 'tecnico');
+
+            // Feedback visual se estiver vazio
+            if (db[scope].length === 0) {
+                // Se o array estiver vazio, talvez o arquivo ainda não foi carregado ou a aba não existe
+                // Mas não damos erro aqui, apenas aplicamos os filtros que vão mostrar "0 registros" ou tabela vazia
+            }
+
+            // Reseta filtros básicos e reaplica
+            currentPage = 1;
+            populateFilters(); // Recarrega cidades/regiões baseadas no novo dataset
+            applyFilters();
+        }
+
+        // --- 2. INICIALIZAÇÃO ---
 
         function initUsers() {
             try {
@@ -415,7 +486,6 @@
         function populateUserSelect() {
             const sel = document.getElementById('userSelect');
             if (!sel) return;
-            
             sel.innerHTML = '<option value="">-- Selecione seu Usuário --</option>';
             users.forEach((u, index) => {
                 sel.innerHTML += `<option value="${index}">${u.name} ${u.region ? `(${u.region})` : '- Geral'}</option>`;
@@ -438,13 +508,10 @@
             if(dateEl) dateEl.innerText = new Date().toLocaleDateString('pt-BR');
         });
 
-        // --- 1. LÓGICA DE LOGIN E CADASTRO ---
-
         function performLogin() {
             const sel = document.getElementById('userSelect');
             if(!sel) return;
             const idx = sel.value;
-            
             if (idx === "") return alert("Por favor, selecione seu usuário na lista.");
             
             currentUser = users[idx];
@@ -485,20 +552,17 @@
             
             populateUserSelect();
             toggleAddUser(false);
-            
-            // Seleciona automaticamente o novo usuário
             const sel = document.getElementById('userSelect');
             sel.value = users.length - 1;
-            
             alert(`Usuário ${name} cadastrado com sucesso neste navegador!`);
         }
 
         function populateNewUserRegions() {
             const regSel = document.getElementById('newUserRegion');
             if(!regSel) return;
-            
-            // Une as regiões fixas com as encontradas na planilha
-            const fileRegions = [...new Set(rawData.map(r => r.regiao))].filter(Boolean);
+            // Pega regiões de AMBOS os datasets para popular o cadastro
+            const allRaw = [...db.qualificacao, ...db.tecnico];
+            const fileRegions = [...new Set(allRaw.map(r => r.regiao))].filter(Boolean);
             const allRegions = [...new Set([...PREDEFINED_REGIONS, ...fileRegions])].sort();
 
             let options = '<option value="">Acesso Geral (Todas as Regiões)</option>';
@@ -508,21 +572,12 @@
             regSel.innerHTML = options;
         }
 
-        // --- 2. CARREGAMENTO DE DADOS ---
+        // --- 3. CARREGAMENTO DE ARQUIVOS (Lógica Atualizada) ---
 
-        let rawData = [];
-        let filteredData = [];
-        let currentPage = 1;
-        const itemsPerPage = 50;
-        let chartStatusInstance = null;
-        let chartRegiaoInstance = null;
-
-        // Tenta carregar múltiplos nomes de arquivo para evitar erro 404
         async function tryLoadDefault() {
             const spinner = document.getElementById('loadingSpinner');
             if(spinner) spinner.classList.remove('hidden');
 
-            // --- AQUI ESTÁ A MUDANÇA: Incluindo .xlsm ---
             const candidates = ["Dados Gerais.xlsm", "Dados Gerais.xlsx", "dados gerais.xlsx", "Dados Gerais.csv"];
             let fileFound = false;
 
@@ -535,7 +590,7 @@
                         const dummyInput = { files: [file] };
                         processFile(dummyInput);
                         fileFound = true;
-                        break; // Sucesso!
+                        break; 
                     }
                 } catch (e) {
                     console.log(`Tentativa falhou para ${filename}`);
@@ -556,7 +611,7 @@
                                         <i data-lucide="file-warning" class="w-8 h-8 text-senac-orange"></i>
                                     </div>
                                     <p class="text-sm font-bold">Planilha não encontrada automaticamente.</p>
-                                    <p class="text-xs">Verifique se o arquivo <strong>Dados Gerais.xlsm</strong> está na mesma pasta no GitHub.</p>
+                                    <p class="text-xs">Verifique se o arquivo <strong>Dados Gerais.xlsm</strong> está na mesma pasta.</p>
                                     <button onclick="document.getElementById('fileInput').click()" class="mt-2 text-xs bg-senac-blue text-white px-4 py-2 rounded-lg font-bold shadow hover:bg-blue-800 transition-colors">
                                         Selecionar Arquivo Manualmente
                                     </button>
@@ -583,88 +638,148 @@
                         const data = new Uint8Array(e.target.result);
                         const workbook = XLSX.read(data, {type: 'array'});
                         
-                        let sheetName = workbook.SheetNames.find(n => n.toLowerCase().trim() === "dados gerais");
-                        if(!sheetName) sheetName = workbook.SheetNames[0]; 
+                        // 1. Processar Usuários (Aba 'Usuarios' ou 'Login')
+                        const userSheetName = workbook.SheetNames.find(n => 
+                            n.toLowerCase().trim() === "usuarios" || 
+                            n.toLowerCase().trim() === "usuários" ||
+                            n.toLowerCase().trim() === "login"
+                        );
 
-                        const worksheet = workbook.Sheets[sheetName];
-                        const json = XLSX.utils.sheet_to_json(worksheet, {header: 1, defval: ""});
-                        
-                        if(json.length < 2) throw new Error("Vazio");
+                        if (userSheetName) {
+                            const userWs = workbook.Sheets[userSheetName];
+                            const userJson = XLSX.utils.sheet_to_json(userWs);
+                            const loadedUsers = userJson.map(row => {
+                                const getVal = (keys) => {
+                                    for(let k of keys) {
+                                        const key = Object.keys(row).find(rk => rk.toLowerCase().trim() === k.toLowerCase());
+                                        if(key) return row[key];
+                                    }
+                                    return '';
+                                };
+                                return {
+                                    name: getVal(['Nome', 'Usuario', 'User']),
+                                    email: getVal(['Email', 'E-mail', 'Mail']),
+                                    region: getVal(['Regiao', 'Região', 'Regional'])
+                                };
+                            }).filter(u => u.name);
 
-                        const headers = json[0].map(h => String(h).trim());
-                        
-                        const getIdx = (candidates) => {
-                            for(let c of candidates) {
-                                const i = headers.findIndex(h => h.toLowerCase().includes(c.toLowerCase()));
-                                if(i > -1) return i;
+                            if (loadedUsers.length > 0) {
+                                users = loadedUsers;
+                                localStorage.setItem('senacSupervisors', JSON.stringify(users));
+                                populateUserSelect();
                             }
-                            return -1;
                         }
 
-                        const map = {
-                            nome: getIdx(["Apr. Nome", "Nome", "Jovem"]),
-                            turma: getIdx(["Turma", "Matrícula"]),
-                            hrTeoria: getIdx(["Teoria Hr Ini", "Horario Teoria"]),
-                            cidade: getIdx(["Emp. Cidade"]),
-                            regiao: getIdx(["Atuação Senac", "Região"]),
-                            empresa: getIdx(["Razao Social", "Empresa"]),
-                            supNome: getIdx(["Sup. Cadastrado", "Supervisor"]),
-                            supCel: getIdx(["Sup Celular"]),
-                            supEmail: getIdx(["Sup. Email", "Email Supervisor", "E-mail"]), 
-                            dtIni: getIdx(["TurDatIni"]),
-                            dtFim: getIdx(["TurDatFim"]),
-                            v1Dt: getIdx(["Data da Visita 1"]),
-                            v1St: getIdx(["Status Visita 1"]),
-                            v2Dt: getIdx(["Data da Visita 2"]),
-                            v2St: getIdx(["Status Visita"]), 
-                            v3Dt: getIdx(["Data da Visita 3"]),
-                            v3St: getIdx(["Status Visita"])
-                        };
+                        // 2. Processar "Dados Gerais" (Qualificação)
+                        // Procura exato "Dados Gerais" ou algo muito parecido
+                        let sheetQuali = workbook.SheetNames.find(n => n.trim().toLowerCase() === "dados gerais");
+                        // Se não achar exato, pega a primeira que contiver "Gerais" e NÃO contiver "Tec"
+                        if(!sheetQuali) sheetQuali = workbook.SheetNames.find(n => n.toLowerCase().includes("dados gerais") && !n.toLowerCase().includes("tec"));
+                        
+                        // 3. Processar "Dados Gerais - Téc" (Técnico)
+                        // Procura algo que tenha "Gerais" E "Tec" ou "Téc"
+                        let sheetTec = workbook.SheetNames.find(n => n.toLowerCase().includes("dados gerais") && (n.toLowerCase().includes("tec") || n.toLowerCase().includes("téc")));
+                        
+                        // Fallback: se não achar 'Dados Gerais' padrão, usa a primeira aba como Qualificação
+                        if(!sheetQuali && !sheetTec) sheetQuali = workbook.SheetNames[0];
 
-                        rawData = json.slice(1).map((row, i) => {
-                            if(!row[map.nome]) return null;
-                            
-                            const idxV2St = map.v2Dt > -1 ? map.v2Dt + 1 : -1; 
-                            const idxV3St = map.v3Dt > -1 ? map.v3Dt + 1 : -1;
+                        // Reset DB
+                        db.qualificacao = [];
+                        db.tecnico = [];
 
-                            return {
-                                id: i,
-                                nome: String(row[map.nome]).trim(),
-                                turma: String(row[map.turma] || "N/A"),
-                                hrTeoria: formatExcelTime(row[map.hrTeoria]), 
-                                cidade: row[map.cidade] || "N/A",
-                                regiao: row[map.regiao] || "Geral",
-                                empresa: row[map.empresa],
-                                supervisor: {
-                                    nome: row[map.supNome] || "Não inf.",
-                                    cel: row[map.supCel] || "",
-                                    email: row[map.supEmail] || "" 
-                                },
-                                inicio: parseDate(row[map.dtIni]),
-                                fim: parseDate(row[map.dtFim]),
-                                visits: [
-                                    { date: parseDate(row[map.v1Dt]), status: String(row[map.v1St]).trim(), label: "1ª" },
-                                    { date: parseDate(row[map.v2Dt]), status: String(row[idxV2St] || row[map.v2St]).trim(), label: "2ª" },
-                                    { date: parseDate(row[map.v3Dt]), status: String(row[idxV3St] || row[map.v3St]).trim(), label: "3ª" }
-                                ]
-                            };
-                        }).filter(x => x);
+                        if (sheetQuali) {
+                            console.log("Carregando Qualificação de:", sheetQuali);
+                            db.qualificacao = parseSheet(workbook.Sheets[sheetQuali]);
+                        }
+                        
+                        if (sheetTec) {
+                            console.log("Carregando Técnico de:", sheetTec);
+                            db.tecnico = parseSheet(workbook.Sheets[sheetTec]);
+                        } else {
+                            console.log("Aba Técnica não encontrada.");
+                        }
 
-                        populateFilters();
-                        applyFilters();
+                        // Atualiza a interface
+                        switchScope(currentScope); // Mantém o escopo atual ou recarrega
                         
                         if(spinner) spinner.classList.add('hidden');
                         const btnText = document.getElementById('btnUploadText');
-                        if(btnText) btnText.innerText = "Dados Atualizados";
+                        if(btnText) btnText.innerText = "Atualizado";
 
                     } catch(e) {
                         console.error(e);
-                        alert("Erro ao processar arquivo. Verifique se é uma planilha válida.");
+                        alert("Erro ao processar arquivo.");
                         if(spinner) spinner.classList.add('hidden');
                     }
                 }, 100);
             };
             reader.readAsArrayBuffer(file);
+        }
+
+        // Função genérica para ler uma aba e retornar array formatado
+        function parseSheet(worksheet) {
+            const json = XLSX.utils.sheet_to_json(worksheet, {header: 1, defval: ""});
+            if(json.length < 2) return [];
+
+            const headers = json[0].map(h => String(h).trim());
+            
+            const getIdx = (candidates) => {
+                for(let c of candidates) {
+                    const i = headers.findIndex(h => h.toLowerCase().includes(c.toLowerCase()));
+                    if(i > -1) return i;
+                }
+                return -1;
+            }
+
+            const map = {
+                nome: getIdx(["Apr. Nome", "Nome", "Jovem"]),
+                turma: getIdx(["Turma", "Matrícula"]),
+                hrTeoria: getIdx(["Teoria Hr Ini", "Horario Teoria"]),
+                cidade: getIdx(["Emp. Cidade"]),
+                regiao: getIdx(["Atuação Senac", "Região"]),
+                empresa: getIdx(["Razao Social", "Empresa"]),
+                supNome: getIdx(["Sup. Cadastrado", "Supervisor"]),
+                supCel: getIdx(["Sup Celular"]),
+                supEmail: getIdx(["Sup. Email", "Email Supervisor", "E-mail"]), 
+                dtIni: getIdx(["TurDatIni"]),
+                dtFim: getIdx(["TurDatFim"]),
+                v1Dt: getIdx(["Data da Visita 1"]),
+                v1St: getIdx(["Status Visita 1"]),
+                v2Dt: getIdx(["Data da Visita 2"]),
+                v2St: getIdx(["Status Visita"]), 
+                v3Dt: getIdx(["Data da Visita 3"]),
+                v3St: getIdx(["Status Visita"])
+            };
+
+            return json.slice(1).map((row, i) => {
+                if(!row[map.nome]) return null;
+                
+                // Ajuste para colunas de status subsequentes se não nomeadas explicitamente
+                const idxV2St = map.v2Dt > -1 ? map.v2Dt + 1 : -1; 
+                const idxV3St = map.v3Dt > -1 ? map.v3Dt + 1 : -1;
+
+                return {
+                    id: i,
+                    nome: String(row[map.nome]).trim(),
+                    turma: String(row[map.turma] || "N/A"),
+                    hrTeoria: formatExcelTime(row[map.hrTeoria]), 
+                    cidade: row[map.cidade] || "N/A",
+                    regiao: row[map.regiao] || "Geral",
+                    empresa: row[map.empresa],
+                    supervisor: {
+                        nome: row[map.supNome] || "Não inf.",
+                        cel: row[map.supCel] || "",
+                        email: row[map.supEmail] || "" 
+                    },
+                    inicio: parseDate(row[map.dtIni]),
+                    fim: parseDate(row[map.dtFim]),
+                    visits: [
+                        { date: parseDate(row[map.v1Dt]), status: String(row[map.v1St]).trim(), label: "1ª" },
+                        { date: parseDate(row[map.v2Dt]), status: String(row[idxV2St] || row[map.v2St]).trim(), label: "2ª" },
+                        { date: parseDate(row[map.v3Dt]), status: String(row[idxV3St] || row[map.v3St]).trim(), label: "3ª" }
+                    ]
+                };
+            }).filter(x => x);
         }
 
         // --- Helpers ---
@@ -754,8 +869,11 @@
             const selReg = document.getElementById('filterRegiao');
             if(!selReg) return;
 
-            // Une regiões predefinidas com as do arquivo
-            const fileRegions = [...new Set(rawData.map(i => i.regiao))].filter(Boolean);
+            // Pega dados do escopo atual para os filtros
+            const currentData = db[currentScope] || [];
+
+            // Une regiões predefinidas com as do arquivo atual
+            const fileRegions = [...new Set(currentData.map(i => i.regiao))].filter(Boolean);
             const allRegions = [...new Set([...PREDEFINED_REGIONS, ...fileRegions])].sort();
             
             if (currentUser && currentUser.region) {
@@ -787,9 +905,10 @@
             const selCid = document.getElementById('filterCidade');
             if(!selCid) return;
             const currentVal = selCid.value;
+            const currentData = db[currentScope] || [];
 
             const availableCities = [...new Set(
-                rawData
+                currentData
                     .filter(item => region === "" || item.regiao === region)
                     .map(item => item.cidade)
             )].filter(Boolean).sort();
@@ -801,8 +920,6 @@
                 selCid.value = currentVal;
             }
         }
-
-        let currentStatusFilter = 'all';
 
         function filterByStatus(status) {
             currentStatusFilter = status;
@@ -816,6 +933,9 @@
             const statusEl = document.getElementById('filterContractStatus');
 
             if(!searchEl || !regEl || !cidEl || !statusEl) return;
+
+            // Usa os dados do escopo atual
+            const rawData = db[currentScope] || [];
 
             const search = searchEl.value.toLowerCase();
             const regiao = regEl.value;
@@ -842,7 +962,9 @@
                 return true;
             });
 
-            currentPage = 1;
+            // Se o dataset estiver vazio (ex: aba técnica não existe), filteredData será vazio
+            // A tabela mostrará "0 registros", o que é correto.
+
             updateDashboard();
             renderTable();
         }
@@ -931,13 +1053,33 @@
             }
         }
 
+        function changePage(delta) {
+            currentPage += delta;
+            renderTable();
+        }
+
         function renderTable() {
             const tbody = document.getElementById('tableBody');
             if(!tbody) return;
             tbody.innerHTML = '';
+
+            if (filteredData.length === 0) {
+                 tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="p-12 text-center text-slate-400">
+                            <div class="flex flex-col items-center gap-3">
+                                <i data-lucide="inbox" class="w-8 h-8 opacity-40"></i>
+                                <p>Nenhum dado encontrado para o filtro atual.</p>
+                            </div>
+                        </td>
+                    </tr>`;
+                 if(typeof lucide !== 'undefined') lucide.createIcons();
+                 return;
+            }
             
             const totalPages = Math.ceil(filteredData.length / itemsPerPage) || 1;
             if (currentPage > totalPages) currentPage = 1;
+            if (currentPage < 1) currentPage = 1;
 
             const start = (currentPage - 1) * itemsPerPage;
             const end = start + itemsPerPage;
@@ -1050,8 +1192,8 @@
             });
             const ws = XLSX.utils.aoa_to_sheet(exportData);
             const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Relatório Filtrado");
-            XLSX.writeFile(wb, `Relatorio_Gestao_Senac_${new Date().toLocaleDateString('pt-BR').replace(/\//g,'-')}.xlsx`);
+            XLSX.utils.book_append_sheet(wb, ws, `Relatorio_${currentScope}`);
+            XLSX.writeFile(wb, `Relatorio_Senac_${currentScope}_${new Date().toLocaleDateString('pt-BR').replace(/\//g,'-')}.xlsx`);
         }
     </script>
 </body>
