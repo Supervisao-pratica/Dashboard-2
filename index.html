@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Painel BI - Supervisão Senac 2025</title>
+    <!-- Bibliotecas Externas (CDNs) -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
@@ -37,10 +38,11 @@
             box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
         }
 
-        /* Modal de Login */
+        /* Modal de Login (Forçado Visível por Padrão) */
         #authModal {
+            display: flex; /* Garante display flex inicialmente */
             backdrop-filter: blur(8px);
-            background-color: rgba(255, 255, 255, 0.8);
+            background-color: rgba(255, 255, 255, 0.9);
         }
 
         /* Scrollbar */
@@ -56,8 +58,8 @@
 </head>
 <body class="text-slate-800 h-screen flex flex-col overflow-hidden">
 
-    <!-- MODAL DE ACESSO -->
-    <div id="authModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <!-- MODAL DE ACESSO (Login) -->
+    <div id="authModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-md p-8 relative overflow-hidden">
             <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-senac-blue to-senac-orange"></div>
             
@@ -71,9 +73,8 @@
                 <div class="mb-4">
                     <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Selecione seu Usuário</label>
                     <div class="relative">
-                        <select id="userSelect" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 font-medium outline-none focus:border-senac-blue focus:ring-2 focus:ring-blue-50 appearance-none">
-                            <option value="">-- Selecione --</option>
-                            <!-- Preenchido via JS -->
+                        <select id="userSelect" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 font-medium outline-none focus:border-senac-blue focus:ring-2 focus:ring-blue-50 appearance-none cursor-pointer">
+                            <option value="">Carregando usuários...</option>
                         </select>
                         <i data-lucide="chevron-down" class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none"></i>
                     </div>
@@ -84,9 +85,13 @@
                     <i data-lucide="arrow-right" class="w-4 h-4"></i>
                 </button>
 
-                <div class="mt-6 text-center">
-                    <button onclick="toggleAddUser(true)" class="text-xs text-senac-orange font-bold hover:underline">
-                        + Cadastrar novo usuário
+                <!-- Botões de Gerenciamento -->
+                <div class="mt-6 flex justify-between items-center px-2">
+                    <button onclick="toggleAddUser(true)" class="text-xs text-senac-orange font-bold hover:underline flex items-center gap-1">
+                        <i data-lucide="plus-circle" class="w-3 h-3"></i> Cadastrar Novo
+                    </button>
+                    <button onclick="resetUsersToDefault()" class="text-[10px] text-slate-400 hover:text-red-500 hover:underline">
+                        Restaurar Padrão
                     </button>
                 </div>
             </div>
@@ -96,15 +101,33 @@
                 <h3 class="text-sm font-bold text-slate-700 mb-4 flex items-center gap-2">
                     <i data-lucide="user-plus" class="w-4 h-4 text-senac-orange"></i> Novo Cadastro
                 </h3>
-                <input type="text" id="newUserName" placeholder="Nome" class="w-full mb-3 p-2 border rounded text-sm">
-                <input type="email" id="newUserEmail" placeholder="E-mail" class="w-full mb-3 p-2 border rounded text-sm">
-                <select id="newUserRegion" class="w-full mb-3 p-2 border rounded text-sm bg-white">
-                    <option value="">Acesso Geral (Todas as Regiões)</option>
-                    <!-- Regiões populadas via JS -->
-                </select>
-                <div class="flex gap-2">
-                    <button onclick="toggleAddUser(false)" class="flex-1 py-2 bg-slate-100 text-slate-600 font-bold rounded text-xs">Cancelar</button>
-                    <button onclick="saveNewUser()" class="flex-1 py-2 bg-senac-orange text-white font-bold rounded text-xs">Salvar</button>
+                
+                <div class="space-y-3">
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-400 uppercase">Nome</label>
+                        <input type="text" id="newUserName" placeholder="Ex: João Silva" class="w-full p-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-senac-blue">
+                    </div>
+                    
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-400 uppercase">E-mail</label>
+                        <input type="email" id="newUserEmail" placeholder="Ex: joao@senac.br" class="w-full p-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-senac-blue">
+                    </div>
+
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-400 uppercase">Região de Atuação</label>
+                        <div class="relative">
+                            <select id="newUserRegion" class="w-full p-2 border border-slate-200 rounded-lg text-sm bg-white outline-none focus:border-senac-blue appearance-none">
+                                <option value="">Acesso Geral (Todas as Regiões)</option>
+                                <!-- Regiões populadas via JS -->
+                            </select>
+                            <i data-lucide="chevron-down" class="absolute right-3 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-400 pointer-events-none"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex gap-2 mt-5">
+                    <button onclick="toggleAddUser(false)" class="flex-1 py-2 bg-slate-100 text-slate-600 font-bold rounded-lg text-xs hover:bg-slate-200 transition-colors">Cancelar</button>
+                    <button onclick="saveNewUser()" class="flex-1 py-2 bg-senac-orange text-white font-bold rounded-lg text-xs hover:bg-orange-600 transition-colors shadow-sm">Salvar Acesso</button>
                 </div>
             </div>
         </div>
@@ -138,13 +161,12 @@
                 <input type="file" id="fileInput" accept=".csv, .xlsx, .xlsm, .xls" class="hidden" onchange="processFile(this)">
                 <button onclick="document.getElementById('fileInput').click()" class="group flex items-center gap-2 bg-slate-50 hover:bg-senac-blue hover:text-white text-slate-600 px-4 py-2.5 rounded-xl border border-slate-200 transition-all shadow-sm" title="Carregar Dados Gerais.xlsx">
                     <i data-lucide="upload-cloud" class="w-4 h-4 text-senac-orange group-hover:text-white transition-colors"></i>
-                    <!-- ID Adicionado para evitar erro de seleção -->
                     <span id="btnUploadText" class="text-xs font-bold uppercase">Recarregar Dados</span>
                 </button>
                 <div id="loadingSpinner" class="hidden"><div class="loader border-t-senac-blue"></div></div>
             </div>
             
-            <button onclick="logout()" class="p-2 hover:bg-red-50 text-slate-400 hover:text-red-500 rounded-lg transition-colors" title="Sair">
+            <button onclick="logout()" class="p-2 hover:bg-red-50 text-slate-400 hover:text-red-500 rounded-lg transition-colors" title="Sair / Trocar Usuário">
                 <i data-lucide="log-out" class="w-5 h-5"></i>
             </button>
         </div>
@@ -330,7 +352,7 @@
                                             <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center animate-pulse">
                                                 <i data-lucide="cloud-download" class="w-8 h-8 opacity-40"></i>
                                             </div>
-                                            <p>Tentando carregar dados do GitHub...</p>
+                                            <p>Aguardando Dados...</p>
                                         </div>
                                     </td>
                                 </tr>
@@ -350,44 +372,83 @@
         </main>
     </div>
 
-    <!-- SCRIPT -->
+    <!-- SCRIPT CENTRAL -->
     <script>
-        const today = new Date();
-        const dateEl = document.getElementById('currentDate');
-        if(dateEl) dateEl.innerText = today.toLocaleDateString('pt-BR');
+        // --- 0. INICIALIZAÇÃO CRÍTICA ---
+        
+        // LISTA DE REGIÕES CONHECIDAS (Para não ficar vazio antes de carregar o arquivo)
+        const PREDEFINED_REGIONS = [
+            "APUCARANA", "CAMPO MOURÃO", "CASCAVEL", "CASTRO", "CORNÉLIO PROCÓPIO", "CURITIBA", 
+            "FOZ DO IGUAÇU", "FRANCISCO BELTRÃO", "GUARAPUAVA", "IRATI", "IVAIPORÃ", 
+            "JACAREZINHO", "LONDRINA", "MARINGÁ", "MATINHOS", "MEDIANEIRA", "PARANAGUÁ", 
+            "PARANAVAÍ", "PATO BRANCO", "PONTA GROSSA", "PRUDENTÓPOLIS", "RIO NEGRO", 
+            "SANTO ANTÔNIO DA PLATINA", "TOLEDO", "UMUARAMA", "UNIÃO DA VITÓRIA"
+        ];
 
-        // --- GESTÃO DE USUÁRIOS E LOGIN ---
-        let currentUser = null;
-        let users = [
+        // Definição de Usuários Padrão (Fixo no Código)
+        const DEFAULT_USERS = [
             { name: 'Gestor Geral', region: '', email: 'gestor@senac.br' },
             { name: 'Luciano', region: 'CAMPO MOURÃO', email: 'luciano.ramos@docente.pr.senac.br' },
             { name: 'Samoel', region: 'FRANCISCO BELTRÃO', email: 'samoel.pitz@docente.pr.senac.br' },
             { name: 'Michelly', region: 'GUARAPUAVA', email: 'michelly.gronkoski@docente.pr.senac.br' }
         ];
 
-        const storedUsers = localStorage.getItem('senacSupervisors');
-        if (storedUsers) {
-            users = JSON.parse(storedUsers);
-        } else {
-            localStorage.setItem('senacSupervisors', JSON.stringify(users));
+        let currentUser = null;
+        let users = [];
+
+        function initUsers() {
+            try {
+                const stored = localStorage.getItem('senacSupervisors');
+                if (stored && stored !== '[]') {
+                    users = JSON.parse(stored);
+                } else {
+                    users = [...DEFAULT_USERS];
+                    localStorage.setItem('senacSupervisors', JSON.stringify(users));
+                }
+            } catch (e) {
+                console.warn("Erro no localStorage, usando padrão", e);
+                users = [...DEFAULT_USERS];
+            }
+            populateUserSelect();
         }
 
         function populateUserSelect() {
             const sel = document.getElementById('userSelect');
-            if(!sel) return;
-            sel.innerHTML = '<option value="">-- Selecione --</option>';
+            if (!sel) return;
+            
+            sel.innerHTML = '<option value="">-- Selecione seu Usuário --</option>';
             users.forEach((u, index) => {
                 sel.innerHTML += `<option value="${index}">${u.name} ${u.region ? `(${u.region})` : '- Geral'}</option>`;
             });
         }
 
+        function resetUsersToDefault() {
+            if(confirm("Tem certeza? Isso apagará usuários cadastrados manualmente neste navegador.")) {
+                users = [...DEFAULT_USERS];
+                localStorage.setItem('senacSupervisors', JSON.stringify(users));
+                populateUserSelect();
+                alert("Lista restaurada para o padrão do sistema.");
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initUsers();
+            if(typeof lucide !== 'undefined') lucide.createIcons();
+            const dateEl = document.getElementById('currentDate');
+            if(dateEl) dateEl.innerText = new Date().toLocaleDateString('pt-BR');
+        });
+
+        // --- 1. LÓGICA DE LOGIN E CADASTRO ---
+
         function performLogin() {
             const sel = document.getElementById('userSelect');
             if(!sel) return;
             const idx = sel.value;
-            if (idx === "") return alert("Selecione um usuário");
+            
+            if (idx === "") return alert("Por favor, selecione seu usuário na lista.");
             
             currentUser = users[idx];
+            
             const nameEl = document.getElementById('displayUserName');
             const regEl = document.getElementById('displayUserRegion');
             
@@ -395,7 +456,7 @@
             if(regEl) regEl.innerText = currentUser.region || "Acesso Geral";
             
             const modal = document.getElementById('authModal');
-            if(modal) modal.classList.add('hidden');
+            if(modal) modal.style.display = 'none'; 
             
             tryLoadDefault();
         }
@@ -412,35 +473,43 @@
             if (show) populateNewUserRegions();
         }
 
+        function saveNewUser() {
+            const name = document.getElementById('newUserName').value.trim();
+            const email = document.getElementById('newUserEmail').value.trim();
+            const region = document.getElementById('newUserRegion').value;
+
+            if (!name) return alert("Preencha o nome do usuário");
+
+            users.push({ name, email, region });
+            localStorage.setItem('senacSupervisors', JSON.stringify(users));
+            
+            populateUserSelect();
+            toggleAddUser(false);
+            
+            // Seleciona automaticamente o novo usuário
+            const sel = document.getElementById('userSelect');
+            sel.value = users.length - 1;
+            
+            alert(`Usuário ${name} cadastrado com sucesso neste navegador!`);
+        }
+
         function populateNewUserRegions() {
             const regSel = document.getElementById('newUserRegion');
             if(!regSel) return;
             
-            let options = '<option value="">Acesso Geral (Todas)</option>';
-            const uniqueRegs = [...new Set(rawData.map(r => r.regiao))].filter(Boolean).sort();
-            uniqueRegs.forEach(r => {
+            // Une as regiões fixas com as encontradas na planilha
+            const fileRegions = [...new Set(rawData.map(r => r.regiao))].filter(Boolean);
+            const allRegions = [...new Set([...PREDEFINED_REGIONS, ...fileRegions])].sort();
+
+            let options = '<option value="">Acesso Geral (Todas as Regiões)</option>';
+            allRegions.forEach(r => {
                 options += `<option value="${r}">${r}</option>`;
             });
             regSel.innerHTML = options;
         }
 
-        function saveNewUser() {
-            const name = document.getElementById('newUserName').value;
-            const email = document.getElementById('newUserEmail').value;
-            const region = document.getElementById('newUserRegion').value;
+        // --- 2. CARREGAMENTO DE DADOS ---
 
-            if (!name) return alert("Preencha o nome");
-
-            const newUser = { name, email, region };
-            users.push(newUser);
-            localStorage.setItem('senacSupervisors', JSON.stringify(users));
-            
-            populateUserSelect();
-            toggleAddUser(false);
-            alert("Usuário cadastrado com sucesso!");
-        }
-
-        // --- ESTADO DO SISTEMA ---
         let rawData = [];
         let filteredData = [];
         let currentPage = 1;
@@ -448,31 +517,24 @@
         let chartStatusInstance = null;
         let chartRegiaoInstance = null;
 
-        window.onload = () => {
-            if(typeof lucide !== 'undefined') lucide.createIcons();
-            populateUserSelect();
-        };
-
-        // Carregamento Seguro
         async function tryLoadDefault() {
+            const spinner = document.getElementById('loadingSpinner');
+            if(spinner) spinner.classList.remove('hidden');
+
             try {
-                const response = await fetch('Dados Gerais.xlsx'); 
-                if (!response.ok) throw new Error("Arquivo padrão não encontrado");
+                const response = await fetch('Dados Gerais.xlsx');
+                if (!response.ok) throw new Error("Arquivo não encontrado");
                 
                 const blob = await response.blob();
                 const file = new File([blob], "Dados Gerais.xlsx");
                 
-                const dataTransfer = new DataTransfer();
-                dataTransfer.items.add(file);
-                const fileInput = document.getElementById('fileInput');
-                if(fileInput) {
-                    fileInput.files = dataTransfer.files;
-                    processFile(fileInput);
-                }
+                const dummyInput = { files: [file] };
+                processFile(dummyInput);
+
             } catch (error) {
-                console.log("Auto-load falhou:", error);
+                console.warn("Auto-load falhou:", error);
+                if(spinner) spinner.classList.add('hidden');
                 
-                // Correção do Erro de InnerText Null
                 const tbody = document.getElementById('tableBody');
                 if (tbody) {
                     tbody.innerHTML = `
@@ -480,10 +542,13 @@
                             <td colspan="6" class="p-12 text-center text-slate-400">
                                 <div class="flex flex-col items-center gap-3">
                                     <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center">
-                                        <i data-lucide="upload" class="w-8 h-8 text-senac-orange"></i>
+                                        <i data-lucide="file-warning" class="w-8 h-8 text-senac-orange"></i>
                                     </div>
-                                    <p class="text-sm font-bold">Por favor, importe a planilha "Dados Gerais"</p>
-                                    <button onclick="document.getElementById('fileInput').click()" class="text-xs bg-senac-blue text-white px-3 py-1 rounded shadow hover:bg-blue-800 transition-colors">Importar Arquivo</button>
+                                    <p class="text-sm font-bold">Planilha não encontrada automaticamente.</p>
+                                    <p class="text-xs">Certifique-se de que o arquivo <strong>Dados Gerais.xlsx</strong> está na mesma pasta.</p>
+                                    <button onclick="document.getElementById('fileInput').click()" class="mt-2 text-xs bg-senac-blue text-white px-4 py-2 rounded-lg font-bold shadow hover:bg-blue-800 transition-colors">
+                                        Selecionar Arquivo Manualmente
+                                    </button>
                                 </div>
                             </td>
                         </tr>`;
@@ -576,17 +641,14 @@
 
                         populateFilters();
                         applyFilters();
-                        if(spinner) spinner.classList.add('hidden');
                         
-                        // Atualiza Texto do Botão (Protegido)
+                        if(spinner) spinner.classList.add('hidden');
                         const btnText = document.getElementById('btnUploadText');
                         if(btnText) btnText.innerText = "Dados Atualizados";
 
-                        if (document.getElementById('addUserForm') && document.getElementById('addUserForm').offsetParent !== null) populateNewUserRegions();
-
                     } catch(e) {
                         console.error(e);
-                        alert("Erro ao ler arquivo. Verifique a aba 'Dados Gerais'.");
+                        alert("Erro ao processar arquivo. Verifique se é uma planilha válida.");
                         if(spinner) spinner.classList.add('hidden');
                     }
                 }, 100);
@@ -626,7 +688,7 @@
         }
 
         function analyzeJovem(jovem) {
-            const isEncerrado = jovem.fim && jovem.fim < today;
+            const isEncerrado = jovem.fim && jovem.fim < new Date();
             let globalStatus = "No Prazo";
             let globalColor = "green"; 
             
@@ -662,7 +724,8 @@
 
             const deadline = new Date(lastReferenceDate);
             deadline.setDate(deadline.getDate() + 90);
-
+            
+            const today = new Date();
             if (today > deadline) {
                 globalStatus = "Atrasado";
                 globalColor = "red";
@@ -674,11 +737,15 @@
             return { ...jovem, processedVisits, globalStatus, globalColor, isEncerrado };
         }
 
+        // --- FILTROS E RENDERIZAÇÃO ---
+
         function populateFilters() {
             const selReg = document.getElementById('filterRegiao');
             if(!selReg) return;
 
-            const regioes = [...new Set(rawData.map(i => i.regiao))].filter(Boolean).sort();
+            // Une regiões predefinidas com as do arquivo
+            const fileRegions = [...new Set(rawData.map(i => i.regiao))].filter(Boolean);
+            const allRegions = [...new Set([...PREDEFINED_REGIONS, ...fileRegions])].sort();
             
             if (currentUser && currentUser.region) {
                 selReg.innerHTML = `<option value="${currentUser.region}">${currentUser.region}</option>`;
@@ -689,7 +756,7 @@
                 updateCityOptions(currentUser.region); 
             } else {
                 selReg.innerHTML = '<option value="">Todas as Regiões</option>';
-                regioes.forEach(r => selReg.innerHTML += `<option value="${r}">${r}</option>`);
+                allRegions.forEach(r => selReg.innerHTML += `<option value="${r}">${r}</option>`);
                 selReg.disabled = false;
                 const lockMsg = document.getElementById('regionLockMsg');
                 if(lockMsg) lockMsg.classList.add('hidden');
