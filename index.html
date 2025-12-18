@@ -159,7 +159,7 @@
             <!-- Botão Upload (Manual e Auto) -->
             <div class="flex items-center gap-2">
                 <input type="file" id="fileInput" accept=".csv, .xlsx, .xlsm, .xls" class="hidden" onchange="processFile(this)">
-                <button onclick="document.getElementById('fileInput').click()" class="group flex items-center gap-2 bg-slate-50 hover:bg-senac-blue hover:text-white text-slate-600 px-4 py-2.5 rounded-xl border border-slate-200 transition-all shadow-sm" title="Carregar Dados Gerais.xlsx">
+                <button onclick="document.getElementById('fileInput').click()" class="group flex items-center gap-2 bg-slate-50 hover:bg-senac-blue hover:text-white text-slate-600 px-4 py-2.5 rounded-xl border border-slate-200 transition-all shadow-sm" title="Carregar Dados Gerais.xlsm">
                     <i data-lucide="upload-cloud" class="w-4 h-4 text-senac-orange group-hover:text-white transition-colors"></i>
                     <span id="btnUploadText" class="text-xs font-bold uppercase">Recarregar Dados</span>
                 </button>
@@ -517,22 +517,33 @@
         let chartStatusInstance = null;
         let chartRegiaoInstance = null;
 
+        // Tenta carregar múltiplos nomes de arquivo para evitar erro 404
         async function tryLoadDefault() {
             const spinner = document.getElementById('loadingSpinner');
             if(spinner) spinner.classList.remove('hidden');
 
-            try {
-                const response = await fetch('Dados Gerais.xlsx');
-                if (!response.ok) throw new Error("Arquivo não encontrado");
-                
-                const blob = await response.blob();
-                const file = new File([blob], "Dados Gerais.xlsx");
-                
-                const dummyInput = { files: [file] };
-                processFile(dummyInput);
+            // --- AQUI ESTÁ A MUDANÇA: Incluindo .xlsm ---
+            const candidates = ["Dados Gerais.xlsm", "Dados Gerais.xlsx", "dados gerais.xlsx", "Dados Gerais.csv"];
+            let fileFound = false;
 
-            } catch (error) {
-                console.warn("Auto-load falhou:", error);
+            for (const filename of candidates) {
+                try {
+                    const response = await fetch(filename);
+                    if (response.ok) {
+                        const blob = await response.blob();
+                        const file = new File([blob], filename);
+                        const dummyInput = { files: [file] };
+                        processFile(dummyInput);
+                        fileFound = true;
+                        break; // Sucesso!
+                    }
+                } catch (e) {
+                    console.log(`Tentativa falhou para ${filename}`);
+                }
+            }
+
+            if (!fileFound) {
+                console.warn("Nenhum arquivo padrão encontrado.");
                 if(spinner) spinner.classList.add('hidden');
                 
                 const tbody = document.getElementById('tableBody');
@@ -545,7 +556,7 @@
                                         <i data-lucide="file-warning" class="w-8 h-8 text-senac-orange"></i>
                                     </div>
                                     <p class="text-sm font-bold">Planilha não encontrada automaticamente.</p>
-                                    <p class="text-xs">Certifique-se de que o arquivo <strong>Dados Gerais.xlsx</strong> está na mesma pasta.</p>
+                                    <p class="text-xs">Verifique se o arquivo <strong>Dados Gerais.xlsm</strong> está na mesma pasta no GitHub.</p>
                                     <button onclick="document.getElementById('fileInput').click()" class="mt-2 text-xs bg-senac-blue text-white px-4 py-2 rounded-lg font-bold shadow hover:bg-blue-800 transition-colors">
                                         Selecionar Arquivo Manualmente
                                     </button>
