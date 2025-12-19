@@ -1344,7 +1344,7 @@
                     <style>
                         @page Section1 {
                             size: 595.3pt 841.9pt; 
-                            margin: 3.0cm 1.5cm 1.0cm 1.5cm; /* Top Margin increased to fit Header */
+                            margin: 3.0cm 1.5cm 1.0cm 1.5cm; 
                             mso-header-margin: 35.4pt; 
                             mso-footer-margin: 35.4pt; 
                             mso-paper-source: 0;
@@ -1417,6 +1417,7 @@
             // Loop para criar uma página por aluno
             filteredData.forEach((item, index) => {
                 // --- MUDANÇA: USA QUEBRA DE SEÇÃO PARA REINICIAR NUMERAÇÃO DE PÁGINA ---
+                // Isso cria uma nova seção do Word, permitindo reiniciar numeração se configurado, ou ao menos separar os blocos
                 if (index > 0) content += `<br clear=all style='mso-special-character:section-break;page-break-before:always'>`;
 
                 const earliestTime = getEarliestTime(item.hrTeoria, item.hrPratica);
@@ -1514,8 +1515,8 @@
                 <div class="keep-together">
                     <div class="section-title">OBSERVAÇÕES GERAIS</div>
                     <div class="question-text">Observações gerais do(a) responsável pela Prática Profissional no Senac:</div>
-                    <!-- REDUZIDO PARA 8 LINHAS PARA ECONOMIZAR ESPAÇO -->
-                    ${createLines(8)} 
+                    <!-- REDUZIDO PARA 5 LINHAS PARA ECONOMIZAR ESPAÇO E GARANTIR 4 PÁGINAS -->
+                    ${createLines(5)} 
                 </div>
 
                 <br><br>
@@ -1548,7 +1549,7 @@
 
                 <br clear=all style='mso-special-character:line-break;page-break-before:always'>
 
-                <!-- PARTE 2: APRENDIZ (CABEÇALHO JÁ INCLUÍDO AUTOMATICAMENTE) -->
+                <!-- PARTE 2: APRENDIZ (CABEÇALHO JÁ INCLUÍDO AUTOMATICAMENTE PELO @PAGE) -->
                 
                 <div class="section-title">Informações do(a) aprendiz: ${item.nome}</div>
                 <br>
@@ -1606,8 +1607,8 @@
                 <div class="keep-together">
                     <div class="section-title">OBSERVAÇÕES GERAIS</div>
                     <div class="question-text">Observações gerais do(a) responsável pela Prática Profissional no Senac:</div>
-                    <!-- REDUZIDO PARA 8 LINHAS -->
-                    ${createLines(8)} 
+                    <!-- REDUZIDO PARA 5 LINHAS PARA GARANTIR 4 PÁGINAS -->
+                    ${createLines(5)} 
                 </div>
 
                 <br><br>
@@ -1640,12 +1641,11 @@
                 `;
             });
 
-            // RODAPÉ FIXO (NUMERAÇÃO DE PÁGINAS POR SEÇÃO)
+            // RODAPÉ FIXO (NUMERAÇÃO DE PÁGINAS POR SEÇÃO - PAGE de SECTIONPAGES)
             content += `
                 </div>
                 <div style='mso-element:footer' id=f1>
                     <p align=right style='margin-bottom:0px; text-align:right;'>
-                        <!-- MUDANÇA: USA O CAMPO 'SECTIONPAGES' PARA O TOTAL DE PÁGINAS DA SEÇÃO ATUAL -->
                         <span style='font-size:9pt; font-family:Calibri;'>Página <span style='mso-field-code:" PAGE "'></span> de <span style='mso-field-code:" SECTIONPAGES "'></span></span>
                     </p>
                 </div>
