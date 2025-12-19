@@ -1352,7 +1352,7 @@
                         div.Section1 { page: Section1; }
                         body { font-family: 'Calibri', sans-serif; font-size: 10pt; }
                         table { width: 100%; border-collapse: collapse; border: none; margin-bottom: 5px; }
-                        td { border: 1px solid #000; padding: 1px 4px; font-size: 10pt; vertical-align: middle; } /* Padding reduzido no cabeçalho */
+                        td { border: 1px solid #000; padding: 2px 4px; font-size: 10pt; vertical-align: middle; } /* Padding reduzido e justo */
                         .no-border td { border: none; }
                         .header-label { font-weight: bold; }
                         .title-img { text-align: center; margin-bottom: 2px; }
@@ -1371,9 +1371,8 @@
 
             // Helper para comparar horários e pegar o menor
             function getEarliestTime(t1, t2) {
-                // Função para converter "HH:mm" em minutos
                 const toMinutes = (timeStr) => {
-                    if (!timeStr || typeof timeStr !== 'string') return 99999; // Valor alto se inválido
+                    if (!timeStr || typeof timeStr !== 'string') return 99999; 
                     const parts = timeStr.trim().split(':');
                     if (parts.length < 2) return 99999;
                     const h = parseInt(parts[0]);
@@ -1394,7 +1393,6 @@
             filteredData.forEach((item, index) => {
                 if (index > 0) content += `<br clear=all style='mso-special-character:line-break;page-break-before:always'>`;
 
-                // Calcula o horário mais cedo para exibir
                 const earliestTime = getEarliestTime(item.hrTeoria, item.hrPratica);
 
                 content += `
@@ -1410,13 +1408,13 @@
 
                 <table border="1" style="width: 100%;">
                     <tr>
-                        <td class="header-label">Aprendiz:</td>
+                        <td class="header-label" width="15%">Aprendiz:</td>
                         <td colspan="3">${item.nome}</td>
                     </tr>
                     <tr>
                         <td class="header-label">Curso:</td>
                         <td>${item.curso}</td>
-                        <td class="header-label">Turma:</td>
+                        <td class="header-label" width="15%">Turma:</td>
                         <td>${item.turma}</td>
                     </tr>
                     <tr>
@@ -1426,13 +1424,13 @@
                         <td>${item.cidade}</td>
                     </tr>
                      <tr>
-                        <td class="header-label">Supervisor(a) cadastrado:</td>
+                        <td class="header-label">Supervisor(a):</td>
                         <td>${item.supervisor.nome}</td>
-                        <td class="header-label">Mês da avaliação:</td>
+                        <td class="header-label">Mês:</td>
                         <td>${currentMonth}/${currentYear}</td>
                     </tr>
                     <tr>
-                        <td class="header-label">Supervisor(a) na empresa:</td>
+                        <td class="header-label">Sup. Empresa:</td>
                         <td>${item.supervisor.empresa}</td>
                         <td class="header-label">Contato:</td>
                         <td>${item.supervisor.cel}</td>
@@ -1479,27 +1477,34 @@
                 ${createLines(2)}
 
                 <div class="section-title">OBSERVAÇÕES GERAIS</div>
-                <div class="question-text">Observações gerais do(a) responsável pela Prática Profissional no Senac (pontos de atenção, encaminhamentos necessários, sugestões, aspectos a serem retomados na próxima visita à empresa, dentre outros):</div>
+                <div class="question-text">Observações gerais do(a) responsável pela Prática Profissional no Senac:</div>
                 ${createLines(15)} 
 
-                <br><br><br><br>
-                <!-- ASSINATURAS PARTE 1 (SUPERVISOR) -->
-                <table style="width: 100%; text-align: center; border: none; border-collapse: collapse; margin-top: 30px;">
+                <br><br>
+                <!-- ASSINATURAS PARTE 1 (SUPERVISOR) - TABELA CORRIGIDA -->
+                <table style="width: 100%; border: none; border-collapse: collapse; margin-top: 20px;">
                     <tr>
-                        <td width="50%" style="border: none; vertical-align: top; padding: 0 10px;">
-                             <div style="border-top: 2px solid black; width: 100%; margin-bottom: 5px;"></div>
+                         <td width="45%" style="border: none; padding: 0 10px; vertical-align: bottom; height: 40px;">
+                            <!-- Espaço para assinar -->
+                        </td>
+                        <td width="10%" style="border: none;"></td>
+                        <td width="45%" style="border: none; padding: 0 10px; vertical-align: bottom; height: 40px;">
+                            <!-- Espaço para assinar -->
+                        </td>
+                    </tr>
+                    <tr>
+                        <td width="45%" style="border: none; border-top: 1px solid black; text-align: center; padding-top: 5px;">
                              Assinatura do(a) Supervisor(a) da Empresa
                         </td>
-                        <td width="50%" style="border: none; vertical-align: top; padding: 0 10px;">
-                            <div style="border-top: 2px solid black; width: 100%; margin-bottom: 5px;"></div>
+                        <td width="10%" style="border: none;"></td>
+                        <td width="45%" style="border: none; border-top: 1px solid black; text-align: center; padding-top: 5px;">
                              Assinatura do(a) Supervisor do Senac
                         </td>
                     </tr>
                 </table>
-                <br>
-                <br>
-                <br>
-                <div style="text-align: center; font-size: 10pt; margin-top: 20px;">Data: ____/______/________</div>
+
+                <br><br>
+                <div style="text-align: right; font-size: 10pt; margin-top: 10px; margin-right: 0px;">Data: ____/______/________</div>
 
                 <br clear=all style='mso-special-character:line-break;page-break-before:always'>
 
@@ -1544,27 +1549,34 @@
                 ${createLines(2)}
 
                 <div class="section-title">OBSERVAÇÕES GERAIS</div>
-                <div class="question-text">Observações gerais do(a) responsável pela Prática Profissional no Senac (pontos de atenção, encaminhamentos necessários, sugestões, aspectos a serem retomados na próxima visita à empresa, dentre outros):</div>
+                <div class="question-text">Observações gerais do(a) responsável pela Prática Profissional no Senac:</div>
                 ${createLines(15)} 
 
-                <br><br><br><br>
-                <!-- ASSINATURAS PARTE 2 (APRENDIZ) -->
-                <table style="width: 100%; text-align: center; border: none; border-collapse: collapse; margin-top: 30px;">
+                <br><br>
+                <!-- ASSINATURAS PARTE 2 (APRENDIZ) - TABELA CORRIGIDA -->
+                <table style="width: 100%; border: none; border-collapse: collapse; margin-top: 20px;">
                     <tr>
-                        <td width="50%" style="border: none; vertical-align: top; padding: 0 10px;">
-                            <div style="border-top: 2px solid black; width: 100%; margin-bottom: 5px;"></div>
+                         <td width="45%" style="border: none; padding: 0 10px; vertical-align: bottom; height: 40px;">
+                            <!-- Espaço para assinar -->
+                        </td>
+                        <td width="10%" style="border: none;"></td>
+                        <td width="45%" style="border: none; padding: 0 10px; vertical-align: bottom; height: 40px;">
+                            <!-- Espaço para assinar -->
+                        </td>
+                    </tr>
+                    <tr>
+                        <td width="45%" style="border: none; border-top: 1px solid black; text-align: center; padding-top: 5px;">
                              Assinatura do(a) Supervisor do Senac
                         </td>
-                        <td width="50%" style="border: none; vertical-align: top; padding: 0 10px;">
-                             <div style="border-top: 2px solid black; width: 100%; margin-bottom: 5px;"></div>
+                        <td width="10%" style="border: none;"></td>
+                        <td width="45%" style="border: none; border-top: 1px solid black; text-align: center; padding-top: 5px;">
                              Visto do(a) Aprendiz
                         </td>
                     </tr>
                 </table>
-                <br>
-                <br>
-                <br>
-                <div style="text-align: center; font-size: 10pt; margin-top: 20px;">Data: ____/______/________</div>
+
+                <br><br>
+                <div style="text-align: right; font-size: 10pt; margin-top: 10px; margin-right: 0px;">Data: ____/______/________</div>
                 `;
             });
 
