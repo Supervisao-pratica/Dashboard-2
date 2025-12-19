@@ -164,14 +164,13 @@
 
                 <!-- Botões de Gerenciamento -->
                 <div class="mt-6 flex justify-center items-center px-2">
-                    <!-- Opção de Cadastro Local Removida -->
                     <button onclick="resetUsersToDefault()" class="text-[10px] text-slate-400 hover:text-red-500 hover:underline">
                         Restaurar Padrão
                     </button>
                 </div>
             </div>
 
-            <!-- Formulário Novo Usuário (Mantido escondido caso precise reativar no futuro, mas sem botão de acesso) -->
+            <!-- Formulário Novo Usuário (Escondido por padrão) -->
             <div id="addUserForm" class="hidden animate-fade-in">
                 <h3 class="text-sm font-bold text-slate-700 mb-4 flex items-center gap-2">
                     <i data-lucide="user-plus" class="w-4 h-4 text-senac-orange"></i> Novo Cadastro Local
@@ -418,7 +417,7 @@
                         </div>
                         
                         <div class="flex gap-2">
-                            <!-- Novo Botão de Formulários com ID para atualização dinâmica -->
+                            <!-- Novo Botão de Formulários -->
                             <button id="btnGenerateWord" onclick="generateWordForms()" class="flex items-center gap-2 px-4 py-2 bg-senac-blue hover:bg-blue-800 text-white rounded-lg text-xs font-bold transition-all shadow-md shadow-blue-200">
                                 <i data-lucide="file-text" class="w-4 h-4"></i> Gerar Formulários (0)
                             </button>
@@ -518,8 +517,6 @@
             document.getElementById('btnScopeQualificacao').classList.toggle('active', scope === 'qualificacao');
             document.getElementById('btnScopeTecnico').classList.toggle('active', scope === 'tecnico');
 
-            // --- Lógica de Atualização Visual dos Prazos ---
-            // Qualificação: 90 dias / Técnica: 120 dias
             const daysLabel = scope === 'tecnico' ? "120" : "90";
             const legendEl = document.getElementById('legendDelayedText');
             const kpiEl = document.getElementById('kpiDelayedText');
@@ -560,7 +557,6 @@
             });
 
             if(loginSel) {
-                // A primeira opção agora é Acesso Geral (valor vazio)
                 loginSel.innerHTML = '<option value="">Acesso Geral (Todas as Regiões)</option>' + options;
             }
             if(newUserSel) {
@@ -579,18 +575,17 @@
             const passwordContainer = document.getElementById('passwordContainer');
             const recoveryMsg = document.getElementById('recoveryMsg');
 
-            if (region === "") { // Acesso Geral
+            if (region === "") { 
                 emailContainer.classList.add('hidden');
                 passwordContainer.classList.remove('hidden');
-                recoveryMsg.classList.add('hidden'); // Reseta a mensagem ao trocar
-            } else { // Região Específica
+                recoveryMsg.classList.add('hidden');
+            } else { 
                 emailContainer.classList.remove('hidden');
                 passwordContainer.classList.add('hidden');
                 recoveryMsg.classList.add('hidden');
             }
         }
 
-        // --- NOVA LÓGICA DE RECUPERAÇÃO DE SENHA E VISUALIZAÇÃO ---
         function triggerPasswordRecovery() {
             const recoveryMsg = document.getElementById('recoveryMsg');
             recoveryMsg.classList.remove('hidden');
@@ -618,7 +613,6 @@
         }
 
         function openMailClient() {
-            // Gera um e-mail de SOLICITAÇÃO, não de resposta com a senha.
             const emailTo = "tutoria.aprendizagem@pr.senac.br";
             const subject = "Solicitação de Senha - Painel Supervisão (Acesso Geral)";
             const body = "Olá equipe de Tutoria,\n\nSolicito a senha de acesso para o Painel de Supervisão (Acesso Geral).\n\nAtt,\n[Seu Nome/Unidade]";
@@ -627,13 +621,11 @@
             link.href = `mailto:${emailTo}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
             link.click();
         }
-        // --------------------------------------------
 
         function performLogin() {
             const region = document.getElementById('loginRegion').value;
             
             if (region === "") {
-                // LOGIN GERAL - SENHA
                 const password = document.getElementById('loginPassword').value;
                 if (password === "supervisao2026") {
                     currentUser = { name: "Gestão Central", region: "", email: "admin@senac.br" };
@@ -642,23 +634,19 @@
                     alert("Senha de acesso geral incorreta.");
                 }
             } else {
-                // LOGIN REGIONAL - EMAIL
                 const email = document.getElementById('loginEmail').value.trim().toLowerCase();
                 if (!email) return alert("Por favor, digite seu e-mail.");
 
                 const foundUser = users.find(u => {
                     const emailMatch = u.email.toLowerCase() === email;
                     if (!emailMatch) return false;
-                    // Se o usuário tem região, deve bater. Se for geral, pode logar na regional.
                     if (u.region && u.region !== region) return false;
                     return true;
                 });
 
                 if (foundUser) {
                     currentUser = foundUser;
-                    // Se o usuário é geral mas logou numa regional, fixamos a região para o filtro
                     if (!currentUser.region) {
-                         // opcional: clonar objeto para não alterar o original
                          currentUser = { ...currentUser, region: region }; 
                     }
                     finishLogin();
@@ -676,7 +664,6 @@
             
             document.getElementById('authModal').style.display = 'none';
             
-            // Aplica filtro de região automaticamente se não for Geral
             if (displayRegion !== "Acesso Geral" && displayRegion !== "") {
                 const filterReg = document.getElementById('filterRegiao');
                 if (filterReg) {
@@ -686,7 +673,6 @@
                     document.getElementById('regionLockMsg').classList.remove('hidden');
                 }
             }
-            
             tryLoadDefault();
         }
 
@@ -840,14 +826,14 @@
             const map = {
                 nome: getIdx(["Apr. Nome", "Nome", "Jovem"]),
                 turma: getIdx(["Turma", "Matrícula"]),
-                curso: getIdx(["Curso", "Nome do Curso"]), // Adicionado
+                curso: getIdx(["Curso", "Nome do Curso"]), 
                 hrTeoria: getIdx(["Teoria Hr Ini", "Horario Teoria"]),
-                hrPratica: getIdx(["Horário do jovem", "Pratica Hr Ini", "Horario Pratica", "Horário Prática"]), // CAMPO ADICIONADO
+                hrPratica: getIdx(["Horário do jovem", "Pratica Hr Ini", "Horario Pratica", "Horário Prática"]),
                 cidade: getIdx(["Emp. Cidade"]),
                 regiao: getIdx(["Atuação Senac", "Região"]),
                 empresa: getIdx(["Razao Social", "Empresa"]),
                 supNome: getIdx(["Sup. Cadastrado", "Supervisor"]),
-                supEmpresa: getIdx(["Sup. na Empresa", "Supervisor Empresa"]), // Adicionado
+                supEmpresa: getIdx(["Sup. na Empresa", "Supervisor Empresa"]), 
                 supCel: getIdx(["Sup Celular", "Contato", "Sup Telefone"]),
                 supEmail: getIdx(["Sup. Email", "Email Supervisor", "E-mail"]), 
                 dtIni: getIdx(["TurDatIni"]),
@@ -870,16 +856,16 @@
                     id: i,
                     nome: String(row[map.nome]).trim(),
                     turma: String(row[map.turma] || "N/A"),
-                    curso: row[map.curso] || "Não Informado", // Captura
+                    curso: row[map.curso] || "Não Informado",
                     hrTeoria: formatExcelTime(row[map.hrTeoria]),
-                    hrPratica: formatExcelTime(row[map.hrPratica]) || "Não Informado", // Captura do Horário de Prática
+                    hrPratica: formatExcelTime(row[map.hrPratica]) || "Não Informado",
                     cidade: row[map.cidade] || "N/A",
                     regiao: row[map.regiao] || "Geral",
                     empresa: row[map.empresa],
                     supervisor: {
                         nome: row[map.supNome] || "Não inf.",
-                        empresa: row[map.supEmpresa] || "", // Campo Vazio por padrão
-                        cel: row[map.supCel] || "",       // Campo Vazio por padrão
+                        empresa: row[map.supEmpresa] || "", 
+                        cel: row[map.supCel] || "",       
                         email: row[map.supEmail] || "" 
                     },
                     inicio: parseDate(row[map.dtIni]),
@@ -960,7 +946,6 @@
             }
 
             const deadline = new Date(lastReferenceDate);
-            // Lógica Diferenciada: 90 dias para Qualificação, 120 dias (4 meses) para Técnico
             const daysToAdd = currentScope === 'tecnico' ? 120 : 90;
             deadline.setDate(deadline.getDate() + daysToAdd);
             
@@ -986,7 +971,6 @@
             const fileRegions = [...new Set(currentData.map(i => i.regiao))].filter(Boolean);
             const allRegions = [...new Set([...PREDEFINED_REGIONS, ...fileRegions])].sort();
             
-            // Lógica de Filtro Travado se o usuário já estiver logado
             if (currentUser && currentUser.region) {
                 selReg.innerHTML = `<option value="${currentUser.region}">${currentUser.region}</option>`;
                 selReg.value = currentUser.region;
@@ -1091,10 +1075,8 @@
             if(kpiAtrasados) kpiAtrasados.innerText = atrasados;
             if(kpiNoPrazo) kpiNoPrazo.innerText = noPrazo;
 
-            // ATUALIZAÇÃO DINÂMICA DO BOTÃO GERAR FORMULÁRIOS
             const btnWord = document.getElementById('btnGenerateWord');
             if(btnWord) {
-                // Atualiza o texto do botão com a quantidade de itens filtrados
                 btnWord.innerHTML = `<i data-lucide="file-text" class="w-4 h-4"></i> Gerar Formulários (${filteredData.length})`;
                 if(typeof lucide !== 'undefined') lucide.createIcons();
             }
@@ -1315,7 +1297,7 @@
             XLSX.writeFile(wb, `Relatorio_Senac_${currentScope}_${new Date().toLocaleDateString('pt-BR').replace(/\//g,'-')}.xlsx`);
         }
 
-        // --- GERADOR DE FORMULÁRIOS WORD (MAIL MERGE OFICIAL) ---
+        // --- GERADOR DE FORMULÁRIOS WORD ---
         function generateWordForms() {
             if (filteredData.length === 0) return alert("Nenhum jovem selecionado para gerar formulários.");
             if (filteredData.length > 200) {
@@ -1337,8 +1319,6 @@
             }
 
             // HTML DO WORD COM CSS ROBUSTO PARA LAYOUT FIXO
-            // Borda removida do @page para evitar erro de margem
-            // Padding da célula reduzido para 1px
             let content = `
                 <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
                 <head>
@@ -1352,7 +1332,7 @@
                             mso-paper-source: 0;
                             mso-header: h1;
                             mso-footer: f1;
-                            mso-page-numbers-start: 1; /* Força reinício da numeração */
+                            mso-page-numbers-start: 1;
                         }
                         div.Section1 { page: Section1; }
                         
