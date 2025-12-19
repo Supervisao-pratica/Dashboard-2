@@ -1350,6 +1350,7 @@
                             mso-paper-source: 0;
                             mso-header: h1;
                             mso-footer: f1;
+                            mso-page-numbers-start: 1; /* FORÇA REINÍCIO DA NUMERAÇÃO */
 
                             /* BORDA DA PÁGINA - TIPO CAIXA */
                             border: 1pt solid windowtext;
@@ -1384,15 +1385,11 @@
                 </head>
                 <body>
                 <div class=Section1>
-                
-                <!-- CABEÇALHO GLOBAL (Repete em todas as páginas) -->
-                <div style='mso-element:header' id=h1>
-                    <div class="title-img">
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/8/86/Senac_logo.svg" width="80" height="40" alt="Senac">
-                    </div>
-                    <div class="main-title">ACOMPANHAMENTO DO SENAC NO DESENVOLVIMENTO DA PRÁTICA PROFISSIONAL</div>
-                </div>
             `;
+            /* * NOTA IMPORTANTE: Removi o bloco de cabeçalho do início para evitar duplicidade.
+             * Ele será inserido ao FINAL do documento, dentro de uma div oculta,
+             * para que o Word o use apenas como referência de Header/Footer.
+             */
 
             // Helper para comparar horários e pegar o menor
             function getEarliestTime(t1, t2) {
@@ -1416,7 +1413,9 @@
 
             // Loop para criar uma página por aluno
             filteredData.forEach((item, index) => {
-                // --- MUDANÇA: QUEBRA DE SEÇÃO EXPLÍCITA PARA RESETAR PAGINAÇÃO ---
+                // --- QUEBRA DE SEÇÃO EXPLÍCITA PARA RESETAR PAGINAÇÃO ---
+                // "mso-break-type:section-break" força uma nova seção.
+                // Como "mso-page-numbers-start: 1" está no CSS, cada nova seção reinicia em 1.
                 if (index > 0) content += `<br clear=all style='page-break-before:always;mso-break-type:section-break'>`;
 
                 const earliestTime = getEarliestTime(item.hrTeoria, item.hrPratica);
@@ -1514,7 +1513,7 @@
                 <div class="keep-together">
                     <div class="section-title">OBSERVAÇÕES GERAIS</div>
                     <div class="question-text">Observações gerais do(a) responsável pela Prática Profissional no Senac (pontos de atenção, encaminhamentos necessários, sugestões, aspectos a serem retomados na próxima visita à empresa, dentre outros):</div>
-                    <!-- AUMENTADO PARA 7 LINHAS CONFORME SOLICITADO -->
+                    <!-- AUMENTADO PARA 7 LINHAS -->
                     ${createLines(7)} 
                 </div>
 
@@ -1640,13 +1639,29 @@
                 `;
             });
 
-            // RODAPÉ FIXO (NUMERAÇÃO DE PÁGINAS POR SEÇÃO - PAGE de SECTIONPAGES)
+            // FECHAMENTO E DEFINIÇÕES OCULTAS DE HEADER/FOOTER
+            // Mover os headers para cá evita que eles sejam renderizados no corpo do texto antes da hora.
             content += `
                 </div>
-                <div style='mso-element:footer' id=f1>
-                    <p align=right style='margin-bottom:0px; text-align:right;'>
-                        <span style='font-size:9pt; font-family:Calibri;'>Página <span style='mso-field-code:" PAGE "'></span> de <span style='mso-field-code:" SECTIONPAGES "'></span></span>
-                    </p>
+
+                <!-- DEFINIÇÕES DE HEADER E FOOTER (INSERIDAS AO FINAL, OCULTAS) -->
+                <div style="display:none;">
+                    
+                    <!-- CABEÇALHO (Logo + Título) -->
+                    <div style='mso-element:header' id=h1>
+                        <div class="title-img">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/8/86/Senac_logo.svg" width="80" height="40" alt="Senac">
+                        </div>
+                        <div class="main-title">ACOMPANHAMENTO DO SENAC NO DESENVOLVIMENTO DA PRÁTICA PROFISSIONAL</div>
+                    </div>
+
+                    <!-- RODAPÉ (Paginação) -->
+                    <div style='mso-element:footer' id=f1>
+                        <p align=right style='margin-bottom:0px; text-align:right;'>
+                            <span style='font-size:9pt; font-family:Calibri;'>Página <span style='mso-field-code:" PAGE "'></span> de <span style='mso-field-code:" SECTIONPAGES "'></span></span>
+                        </p>
+                    </div>
+
                 </div>
                 </body></html>
             `;
