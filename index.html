@@ -1416,9 +1416,8 @@
 
             // Loop para criar uma página por aluno
             filteredData.forEach((item, index) => {
-                // --- MUDANÇA: USA QUEBRA DE SEÇÃO PARA REINICIAR NUMERAÇÃO DE PÁGINA ---
-                // Isso cria uma nova seção do Word, permitindo reiniciar numeração se configurado, ou ao menos separar os blocos
-                if (index > 0) content += `<br clear=all style='mso-special-character:section-break;page-break-before:always'>`;
+                // --- MUDANÇA: QUEBRA DE SEÇÃO EXPLÍCITA PARA RESETAR PAGINAÇÃO ---
+                if (index > 0) content += `<br clear=all style='page-break-before:always;mso-break-type:section-break'>`;
 
                 const earliestTime = getEarliestTime(item.hrTeoria, item.hrPratica);
 
@@ -1514,9 +1513,9 @@
 
                 <div class="keep-together">
                     <div class="section-title">OBSERVAÇÕES GERAIS</div>
-                    <div class="question-text">Observações gerais do(a) responsável pela Prática Profissional no Senac:</div>
-                    <!-- REDUZIDO PARA 5 LINHAS PARA ECONOMIZAR ESPAÇO E GARANTIR 4 PÁGINAS -->
-                    ${createLines(5)} 
+                    <div class="question-text">Observações gerais do(a) responsável pela Prática Profissional no Senac (pontos de atenção, encaminhamentos necessários, sugestões, aspectos a serem retomados na próxima visita à empresa, dentre outros):</div>
+                    <!-- AUMENTADO PARA 7 LINHAS CONFORME SOLICITADO -->
+                    ${createLines(7)} 
                 </div>
 
                 <br><br>
@@ -1606,9 +1605,9 @@
 
                 <div class="keep-together">
                     <div class="section-title">OBSERVAÇÕES GERAIS</div>
-                    <div class="question-text">Observações gerais do(a) responsável pela Prática Profissional no Senac:</div>
-                    <!-- REDUZIDO PARA 5 LINHAS PARA GARANTIR 4 PÁGINAS -->
-                    ${createLines(5)} 
+                    <div class="question-text">Observações gerais do(a) responsável pela Prática Profissional no Senac (pontos de atenção, encaminhamentos necessários, sugestões, aspectos a serem retomados na próxima visita à empresa, dentre outros):</div>
+                    <!-- AUMENTADO PARA 7 LINHAS -->
+                    ${createLines(7)} 
                 </div>
 
                 <br><br>
