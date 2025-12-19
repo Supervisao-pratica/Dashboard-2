@@ -87,9 +87,15 @@
 </head>
 <body class="text-slate-800 h-screen flex flex-col overflow-hidden">
 
-    <!-- MODAL DE ACESSO (Login) -->
-    <div id="authModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-md p-8 relative overflow-hidden">
+    <!-- TELA DE LOGIN (Página Inteira) -->
+    <div id="loginPage" class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-100">
+        <!-- Background decorativo -->
+        <div class="absolute inset-0 overflow-hidden">
+            <div class="absolute -top-[20%] -left-[10%] w-[50%] h-[50%] rounded-full bg-senac-blue/5 blur-3xl"></div>
+            <div class="absolute top-[60%] -right-[10%] w-[40%] h-[60%] rounded-full bg-senac-orange/5 blur-3xl"></div>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-xl border border-slate-200 w-full max-w-md p-8 relative overflow-hidden z-10 mx-4">
             <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-senac-blue to-senac-orange"></div>
             
             <div class="text-center mb-8">
@@ -143,360 +149,368 @@
                 </div>
             </div>
         </div>
+        
+        <div class="absolute bottom-4 text-slate-400 text-xs text-center w-full">
+            &copy; 2025 Senac PR - Gerência de Educação e Tecnologia
+        </div>
     </div>
 
-    <!-- Header -->
-    <header class="bg-white border-b border-slate-200 flex-shrink-0 z-30 shadow-sm flex flex-col">
-        <!-- Top Bar -->
-        <div class="h-16 flex items-center justify-between px-8">
-            <div class="flex items-center gap-4">
-                <div class="flex flex-col select-none justify-center">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/8/86/Senac_logo.svg" alt="Senac" class="h-10">
+    <!-- ÁREA PRINCIPAL DO SISTEMA (Inicialmente Oculta) -->
+    <div id="appContainer" class="hidden flex-col h-screen w-full">
+        
+        <!-- Header -->
+        <header class="bg-white border-b border-slate-200 flex-shrink-0 z-30 shadow-sm flex flex-col">
+            <!-- Top Bar -->
+            <div class="h-16 flex items-center justify-between px-8">
+                <div class="flex items-center gap-4">
+                    <div class="flex flex-col select-none justify-center">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/8/86/Senac_logo.svg" alt="Senac" class="h-10">
+                    </div>
+                    <div class="h-8 w-px bg-slate-200 mx-2"></div>
+                    <div>
+                        <h1 class="font-bold text-sm text-slate-700">Painel de Supervisão</h1>
+                        <p class="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Gestão de Aprendizagem</p>
+                    </div>
                 </div>
-                <div class="h-8 w-px bg-slate-200 mx-2"></div>
-                <div>
-                    <h1 class="font-bold text-sm text-slate-700">Painel de Supervisão</h1>
-                    <p class="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Gestão de Aprendizagem</p>
+
+                <div class="flex items-center gap-6">
+                    <!-- Info Usuário -->
+                    <div class="text-right hidden md:block">
+                        <p class="text-sm font-bold text-senac-blue" id="displayUserName"></p>
+                        <p class="text-[10px] text-slate-400 font-mono" id="displayUserRegion"></p>
+                    </div>
+
+                    <!-- Botão Upload -->
+                    <div class="flex items-center gap-2">
+                        <input type="file" id="fileInput" accept=".csv, .xlsx, .xlsm, .xls" class="hidden" onchange="processFile(this)">
+                        <button onclick="document.getElementById('fileInput').click()" class="group flex items-center gap-2 bg-slate-50 hover:bg-senac-blue hover:text-white text-slate-600 px-4 py-2 rounded-xl border border-slate-200 transition-all shadow-sm" title="Carregar Dados Gerais.xlsm">
+                            <i data-lucide="upload-cloud" class="w-4 h-4 text-senac-orange group-hover:text-white transition-colors"></i>
+                            <span id="btnUploadText" class="text-xs font-bold uppercase">Carregar Dados</span>
+                        </button>
+                        <div id="loadingSpinner" class="hidden"><div class="loader border-t-senac-blue"></div></div>
+                    </div>
+                    
+                    <button onclick="logout()" class="p-2 hover:bg-red-50 text-slate-400 hover:text-red-500 rounded-lg transition-colors" title="Sair / Trocar Usuário">
+                        <i data-lucide="log-out" class="w-5 h-5"></i>
+                    </button>
                 </div>
             </div>
 
-            <div class="flex items-center gap-6">
-                <!-- Info Usuário -->
-                <div class="text-right hidden md:block">
-                    <p class="text-sm font-bold text-senac-blue" id="displayUserName"></p>
-                    <p class="text-[10px] text-slate-400 font-mono" id="displayUserRegion"></p>
-                </div>
-
-                <!-- Botão Upload -->
-                <div class="flex items-center gap-2">
-                    <input type="file" id="fileInput" accept=".csv, .xlsx, .xlsm, .xls" class="hidden" onchange="processFile(this)">
-                    <button onclick="document.getElementById('fileInput').click()" class="group flex items-center gap-2 bg-slate-50 hover:bg-senac-blue hover:text-white text-slate-600 px-4 py-2 rounded-xl border border-slate-200 transition-all shadow-sm" title="Carregar Dados Gerais.xlsm">
-                        <i data-lucide="upload-cloud" class="w-4 h-4 text-senac-orange group-hover:text-white transition-colors"></i>
-                        <span id="btnUploadText" class="text-xs font-bold uppercase">Carregar Dados</span>
-                    </button>
-                    <div id="loadingSpinner" class="hidden"><div class="loader border-t-senac-blue"></div></div>
-                </div>
-                
-                <button onclick="logout()" class="p-2 hover:bg-red-50 text-slate-400 hover:text-red-500 rounded-lg transition-colors" title="Sair / Trocar Usuário">
-                    <i data-lucide="log-out" class="w-5 h-5"></i>
+            <!-- Navegação (Tabs) -->
+            <div class="flex px-8 bg-white gap-8 border-t border-slate-50">
+                <button onclick="switchTab('qualificacao')" id="tabQualificacao" class="scope-btn active py-3 text-xs font-bold uppercase tracking-wide flex items-center gap-2">
+                    <i data-lucide="book-open" class="w-4 h-4"></i>
+                    Aprendizagem Qualificação
+                </button>
+                <button onclick="switchTab('tecnico')" id="tabTecnico" class="scope-btn py-3 text-xs font-bold uppercase tracking-wide flex items-center gap-2">
+                    <i data-lucide="wrench" class="w-4 h-4"></i>
+                    Aprendizagem Técnica
+                </button>
+                <button onclick="switchTab('financeiro')" id="tabFinanceiro" class="scope-btn py-3 text-xs font-bold uppercase tracking-wide flex items-center gap-2 text-emerald-600">
+                    <i data-lucide="dollar-sign" class="w-4 h-4"></i>
+                    Gestão Financeira
                 </button>
             </div>
-        </div>
+        </header>
 
-        <!-- Navegação (Tabs) -->
-        <div class="flex px-8 bg-white gap-8 border-t border-slate-50">
-            <button onclick="switchTab('qualificacao')" id="tabQualificacao" class="scope-btn active py-3 text-xs font-bold uppercase tracking-wide flex items-center gap-2">
-                <i data-lucide="book-open" class="w-4 h-4"></i>
-                Aprendizagem Qualificação
-            </button>
-            <button onclick="switchTab('tecnico')" id="tabTecnico" class="scope-btn py-3 text-xs font-bold uppercase tracking-wide flex items-center gap-2">
-                <i data-lucide="wrench" class="w-4 h-4"></i>
-                Aprendizagem Técnica
-            </button>
-            <button onclick="switchTab('financeiro')" id="tabFinanceiro" class="scope-btn py-3 text-xs font-bold uppercase tracking-wide flex items-center gap-2 text-emerald-600">
-                <i data-lucide="dollar-sign" class="w-4 h-4"></i>
-                Gestão Financeira
-            </button>
-        </div>
-    </header>
-
-    <!-- VIEWS -->
-    <div class="flex-1 overflow-hidden relative">
-        
-        <!-- VIEW 1: DASHBOARD OPERACIONAL (Qualificação/Técnico) -->
-        <div id="viewDashboard" class="flex h-full w-full">
-            <!-- Sidebar Filtros -->
-            <aside class="w-80 bg-white border-r border-slate-200 flex flex-col z-20 overflow-y-auto shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
-                <div class="p-6 border-b border-slate-100 bg-slate-50/50">
-                    <h3 class="font-bold text-slate-700 flex items-center gap-2 mb-5">
-                        <div class="p-1.5 bg-white border border-slate-200 rounded-lg shadow-sm text-senac-orange">
-                            <i data-lucide="sliders-horizontal" class="w-4 h-4"></i>
-                        </div>
-                        Filtros Avançados
-                    </h3>
-                    
-                    <div class="relative group mb-5">
-                        <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-senac-blue transition-colors"></i>
-                        <input type="text" id="filterSearch" onkeyup="applyFilters()" placeholder="Buscar Jovem ou Turma..." 
-                               class="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:border-senac-blue focus:ring-4 focus:ring-blue-50 outline-none transition-all shadow-sm">
-                    </div>
-
-                    <div class="mb-6">
-                        <label class="text-[11px] font-bold text-slate-400 uppercase tracking-wide ml-1 mb-1 block">Situação do Contrato</label>
-                        <div class="relative">
-                            <select id="filterContractStatus" onchange="applyFilters()" class="w-full appearance-none p-3 bg-white border border-slate-200 rounded-xl text-sm outline-none focus:border-senac-blue focus:ring-2 focus:ring-blue-50 transition-all cursor-pointer text-slate-700 font-medium">
-                                <option value="active">Apenas Ativos (Padrão)</option>
-                                <option value="closed" class="text-red-600 font-bold">Apenas Encerrados</option>
-                                <option value="all">Todos (Ativos + Encerrados)</option>
-                            </select>
-                            <i data-lucide="chevron-down" class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none"></i>
-                        </div>
-                    </div>
-
-                    <div class="space-y-4">
-                        <div>
-                            <label class="text-[11px] font-bold text-slate-400 uppercase tracking-wide ml-1 mb-1 block">Região</label>
-                            <div class="relative">
-                                <select id="filterRegiao" onchange="handleRegionChange()" class="w-full appearance-none p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:border-senac-blue focus:bg-white transition-all cursor-pointer text-slate-700 disabled:opacity-50 disabled:bg-slate-100">
-                                    <option value="">Todas as Regiões</option>
-                                </select>
-                                <i data-lucide="chevron-down" class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none"></i>
+        <!-- VIEWS -->
+        <div class="flex-1 overflow-hidden relative">
+            
+            <!-- VIEW 1: DASHBOARD OPERACIONAL (Qualificação/Técnico) -->
+            <div id="viewDashboard" class="flex h-full w-full">
+                <!-- Sidebar Filtros -->
+                <aside class="w-80 bg-white border-r border-slate-200 flex flex-col z-20 overflow-y-auto shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
+                    <div class="p-6 border-b border-slate-100 bg-slate-50/50">
+                        <h3 class="font-bold text-slate-700 flex items-center gap-2 mb-5">
+                            <div class="p-1.5 bg-white border border-slate-200 rounded-lg shadow-sm text-senac-orange">
+                                <i data-lucide="sliders-horizontal" class="w-4 h-4"></i>
                             </div>
-                            <p id="regionLockMsg" class="hidden text-[10px] text-senac-orange mt-1 font-bold flex items-center gap-1"><i data-lucide="lock" class="w-3 h-3"></i> Filtro bloqueado pelo perfil</p>
-                        </div>
-                        <div>
-                            <label class="text-[11px] font-bold text-slate-400 uppercase tracking-wide ml-1 mb-1 block">Cidade</label>
-                            <div class="relative">
-                                <select id="filterCidade" onchange="applyFilters()" class="w-full appearance-none p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:border-senac-blue focus:bg-white transition-all cursor-pointer text-slate-700">
-                                    <option value="">Todas as Cidades</option>
-                                </select>
-                                <i data-lucide="chevron-down" class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="p-6 mt-auto bg-slate-50 border-t border-slate-200">
-                    <p class="text-[10px] font-bold text-slate-400 uppercase mb-3">Legenda de Situação</p>
-                    <div class="space-y-2.5">
-                        <div class="flex items-center gap-2.5">
-                            <div class="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]"></div>
-                            <span class="text-xs text-slate-600 font-medium">No Prazo / Realizada</span>
-                        </div>
-                        <div class="flex items-center gap-2.5">
-                            <div class="w-2.5 h-2.5 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.4)]"></div>
-                            <span id="legendDelayedText" class="text-xs text-slate-600 font-medium">Atrasado (> 90 dias)</span>
-                        </div>
-                        <div class="flex items-center gap-2.5">
-                            <div class="w-2.5 h-2.5 rounded-full bg-slate-400"></div>
-                            <span class="text-xs text-slate-400">Encerrado</span>
-                        </div>
-                    </div>
-                </div>
-            </aside>
-
-            <!-- Conteúdo Principal Dashboard -->
-            <main class="flex-1 flex flex-col overflow-hidden bg-slate-50/50 relative">
-                <!-- KPIs -->
-                <div class="p-6 pb-2 grid grid-cols-12 gap-6 h-auto flex-shrink-0">
-                    <div class="col-span-12 lg:col-span-3 grid grid-cols-1 gap-4">
-                        <div onclick="filterByStatus('all')" class="card-bi p-5 cursor-pointer relative overflow-hidden group border-l-4 border-l-senac-blue">
-                            <div class="flex justify-between items-start z-10 relative">
-                                <div>
-                                    <p class="text-[11px] text-slate-400 font-bold uppercase tracking-wider mb-1">Total Visualizado</p>
-                                    <h2 class="text-3xl font-extrabold text-slate-800 group-hover:text-senac-blue transition-colors" id="kpiTotal">0</h2>
-                                </div>
-                                <div class="p-2.5 bg-blue-50 text-senac-blue rounded-xl group-hover:scale-110 transition-transform">
-                                    <i data-lucide="users" class="w-5 h-5"></i>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div onclick="filterByStatus('atrasado')" class="card-bi p-5 cursor-pointer relative overflow-hidden group border-l-4 border-l-red-500">
-                            <div class="flex justify-between items-start z-10 relative">
-                                <div>
-                                    <p class="text-[11px] text-red-400 font-bold uppercase tracking-wider mb-1">Visitas Atrasadas</p>
-                                    <h2 class="text-3xl font-extrabold text-red-600" id="kpiAtrasados">0</h2>
-                                    <p id="kpiDelayedText" class="text-[10px] text-red-400 mt-1 font-medium">Fora do prazo de 90 dias</p>
-                                </div>
-                                <div class="p-2.5 bg-red-50 text-red-500 rounded-xl group-hover:scale-110 transition-transform">
-                                    <i data-lucide="alert-triangle" class="w-5 h-5"></i>
-                                </div>
-                            </div>
-                        </div>
+                            Filtros Avançados
+                        </h3>
                         
-                        <div onclick="filterByStatus('noprazo')" class="card-bi p-5 cursor-pointer relative overflow-hidden group border-l-4 border-l-emerald-500">
-                            <div class="flex justify-between items-start z-10 relative">
-                                <div>
-                                    <p class="text-[11px] text-emerald-500 font-bold uppercase tracking-wider mb-1">Em Dia</p>
-                                    <h2 class="text-3xl font-extrabold text-emerald-600" id="kpiNoPrazo">0</h2>
+                        <div class="relative group mb-5">
+                            <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-senac-blue transition-colors"></i>
+                            <input type="text" id="filterSearch" onkeyup="applyFilters()" placeholder="Buscar Jovem ou Turma..." 
+                                class="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:border-senac-blue focus:ring-4 focus:ring-blue-50 outline-none transition-all shadow-sm">
+                        </div>
+
+                        <div class="mb-6">
+                            <label class="text-[11px] font-bold text-slate-400 uppercase tracking-wide ml-1 mb-1 block">Situação do Contrato</label>
+                            <div class="relative">
+                                <select id="filterContractStatus" onchange="applyFilters()" class="w-full appearance-none p-3 bg-white border border-slate-200 rounded-xl text-sm outline-none focus:border-senac-blue focus:ring-2 focus:ring-blue-50 transition-all cursor-pointer text-slate-700 font-medium">
+                                    <option value="active">Apenas Ativos (Padrão)</option>
+                                    <option value="closed" class="text-red-600 font-bold">Apenas Encerrados</option>
+                                    <option value="all">Todos (Ativos + Encerrados)</option>
+                                </select>
+                                <i data-lucide="chevron-down" class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none"></i>
+                            </div>
+                        </div>
+
+                        <div class="space-y-4">
+                            <div>
+                                <label class="text-[11px] font-bold text-slate-400 uppercase tracking-wide ml-1 mb-1 block">Região</label>
+                                <div class="relative">
+                                    <select id="filterRegiao" onchange="handleRegionChange()" class="w-full appearance-none p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:border-senac-blue focus:bg-white transition-all cursor-pointer text-slate-700 disabled:opacity-50 disabled:bg-slate-100">
+                                        <option value="">Todas as Regiões</option>
+                                    </select>
+                                    <i data-lucide="chevron-down" class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none"></i>
                                 </div>
-                                <div class="p-2.5 bg-emerald-50 text-emerald-500 rounded-xl group-hover:scale-110 transition-transform">
-                                    <i data-lucide="check-circle-2" class="w-5 h-5"></i>
+                                <p id="regionLockMsg" class="hidden text-[10px] text-senac-orange mt-1 font-bold flex items-center gap-1"><i data-lucide="lock" class="w-3 h-3"></i> Filtro bloqueado pelo perfil</p>
+                            </div>
+                            <div>
+                                <label class="text-[11px] font-bold text-slate-400 uppercase tracking-wide ml-1 mb-1 block">Cidade</label>
+                                <div class="relative">
+                                    <select id="filterCidade" onchange="applyFilters()" class="w-full appearance-none p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:border-senac-blue focus:bg-white transition-all cursor-pointer text-slate-700">
+                                        <option value="">Todas as Cidades</option>
+                                    </select>
+                                    <i data-lucide="chevron-down" class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none"></i>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Gráficos -->
-                    <div class="col-span-12 md:col-span-4 lg:col-span-4 card-bi p-5 flex flex-col">
-                        <h3 class="text-xs font-bold text-slate-600 uppercase mb-4 flex items-center gap-2">
-                            <i data-lucide="pie-chart" class="w-4 h-4 text-senac-orange"></i> Status Geral
-                        </h3>
-                        <div class="flex-1 min-h-0 relative flex items-center justify-center">
-                            <canvas id="chartStatus"></canvas>
+                    <div class="p-6 mt-auto bg-slate-50 border-t border-slate-200">
+                        <p class="text-[10px] font-bold text-slate-400 uppercase mb-3">Legenda de Situação</p>
+                        <div class="space-y-2.5">
+                            <div class="flex items-center gap-2.5">
+                                <div class="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]"></div>
+                                <span class="text-xs text-slate-600 font-medium">No Prazo / Realizada</span>
+                            </div>
+                            <div class="flex items-center gap-2.5">
+                                <div class="w-2.5 h-2.5 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.4)]"></div>
+                                <span id="legendDelayedText" class="text-xs text-slate-600 font-medium">Atrasado (> 90 dias)</span>
+                            </div>
+                            <div class="flex items-center gap-2.5">
+                                <div class="w-2.5 h-2.5 rounded-full bg-slate-400"></div>
+                                <span class="text-xs text-slate-400">Encerrado</span>
+                            </div>
                         </div>
                     </div>
+                </aside>
 
-                    <div class="col-span-12 md:col-span-5 lg:col-span-5 card-bi p-5 flex flex-col">
-                        <h3 class="text-xs font-bold text-slate-600 uppercase mb-4 flex items-center gap-2">
-                            <i data-lucide="bar-chart-2" class="w-4 h-4 text-senac-blue"></i> Top Cidades/Regiões
-                        </h3>
-                        <div class="flex-1 min-h-0 relative">
-                            <canvas id="chartRegiao"></canvas>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Tabela -->
-                <div class="flex-1 px-6 pb-6 overflow-hidden flex flex-col">
-                    <div class="card-bi flex-1 flex flex-col overflow-hidden bg-white">
-                        <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-white rounded-t-2xl">
-                            <div class="flex items-center gap-3">
-                                <div class="p-2 bg-slate-100 rounded-lg text-slate-600">
-                                    <i data-lucide="list" class="w-4 h-4"></i>
+                <!-- Conteúdo Principal Dashboard -->
+                <main class="flex-1 flex flex-col overflow-hidden bg-slate-50/50 relative">
+                    <!-- KPIs -->
+                    <div class="p-6 pb-2 grid grid-cols-12 gap-6 h-auto flex-shrink-0">
+                        <div class="col-span-12 lg:col-span-3 grid grid-cols-1 gap-4">
+                            <div onclick="filterByStatus('all')" class="card-bi p-5 cursor-pointer relative overflow-hidden group border-l-4 border-l-senac-blue">
+                                <div class="flex justify-between items-start z-10 relative">
+                                    <div>
+                                        <p class="text-[11px] text-slate-400 font-bold uppercase tracking-wider mb-1">Total Visualizado</p>
+                                        <h2 class="text-3xl font-extrabold text-slate-800 group-hover:text-senac-blue transition-colors" id="kpiTotal">0</h2>
+                                    </div>
+                                    <div class="p-2.5 bg-blue-50 text-senac-blue rounded-xl group-hover:scale-110 transition-transform">
+                                        <i data-lucide="users" class="w-5 h-5"></i>
+                                    </div>
                                 </div>
-                                <div>
-                                    <h3 class="font-bold text-slate-700 text-sm">Detalhamento dos Contratos</h3>
-                                    <p class="text-xs text-slate-400 mt-0.5">Mostrando <strong id="countFiltered" class="text-senac-blue">0</strong> registros</p>
+                            </div>
+
+                            <div onclick="filterByStatus('atrasado')" class="card-bi p-5 cursor-pointer relative overflow-hidden group border-l-4 border-l-red-500">
+                                <div class="flex justify-between items-start z-10 relative">
+                                    <div>
+                                        <p class="text-[11px] text-red-400 font-bold uppercase tracking-wider mb-1">Visitas Atrasadas</p>
+                                        <h2 class="text-3xl font-extrabold text-red-600" id="kpiAtrasados">0</h2>
+                                        <p id="kpiDelayedText" class="text-[10px] text-red-400 mt-1 font-medium">Fora do prazo de 90 dias</p>
+                                    </div>
+                                    <div class="p-2.5 bg-red-50 text-red-500 rounded-xl group-hover:scale-110 transition-transform">
+                                        <i data-lucide="alert-triangle" class="w-5 h-5"></i>
+                                    </div>
                                 </div>
                             </div>
                             
-                            <div class="flex gap-2">
-                                <button onclick="exportFilteredReport()" class="flex items-center gap-2 px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-xs font-bold transition-all shadow-md shadow-emerald-200">
-                                    <i data-lucide="download" class="w-4 h-4"></i> Baixar Relatório
-                                </button>
+                            <div onclick="filterByStatus('noprazo')" class="card-bi p-5 cursor-pointer relative overflow-hidden group border-l-4 border-l-emerald-500">
+                                <div class="flex justify-between items-start z-10 relative">
+                                    <div>
+                                        <p class="text-[11px] text-emerald-500 font-bold uppercase tracking-wider mb-1">Em Dia</p>
+                                        <h2 class="text-3xl font-extrabold text-emerald-600" id="kpiNoPrazo">0</h2>
+                                    </div>
+                                    <div class="p-2.5 bg-emerald-50 text-emerald-500 rounded-xl group-hover:scale-110 transition-transform">
+                                        <i data-lucide="check-circle-2" class="w-5 h-5"></i>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
-                        <div class="flex-1 overflow-auto custom-scrollbar">
-                            <table class="w-full text-left border-collapse">
-                                <thead class="bg-slate-50 sticky top-0 z-10 text-[11px] uppercase text-slate-500 font-bold tracking-wide shadow-sm">
+                        <!-- Gráficos -->
+                        <div class="col-span-12 md:col-span-4 lg:col-span-4 card-bi p-5 flex flex-col">
+                            <h3 class="text-xs font-bold text-slate-600 uppercase mb-4 flex items-center gap-2">
+                                <i data-lucide="pie-chart" class="w-4 h-4 text-senac-orange"></i> Status Geral
+                            </h3>
+                            <div class="flex-1 min-h-0 relative flex items-center justify-center">
+                                <canvas id="chartStatus"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="col-span-12 md:col-span-5 lg:col-span-5 card-bi p-5 flex flex-col">
+                            <h3 class="text-xs font-bold text-slate-600 uppercase mb-4 flex items-center gap-2">
+                                <i data-lucide="bar-chart-2" class="w-4 h-4 text-senac-blue"></i> Top Cidades/Regiões
+                            </h3>
+                            <div class="flex-1 min-h-0 relative">
+                                <canvas id="chartRegiao"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tabela -->
+                    <div class="flex-1 px-6 pb-6 overflow-hidden flex flex-col">
+                        <div class="card-bi flex-1 flex flex-col overflow-hidden bg-white">
+                            <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-white rounded-t-2xl">
+                                <div class="flex items-center gap-3">
+                                    <div class="p-2 bg-slate-100 rounded-lg text-slate-600">
+                                        <i data-lucide="list" class="w-4 h-4"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="font-bold text-slate-700 text-sm">Detalhamento dos Contratos</h3>
+                                        <p class="text-xs text-slate-400 mt-0.5">Mostrando <strong id="countFiltered" class="text-senac-blue">0</strong> registros</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex gap-2">
+                                    <button onclick="exportFilteredReport()" class="flex items-center gap-2 px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-xs font-bold transition-all shadow-md shadow-emerald-200">
+                                        <i data-lucide="download" class="w-4 h-4"></i> Baixar Relatório
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="flex-1 overflow-auto custom-scrollbar">
+                                <table class="w-full text-left border-collapse">
+                                    <thead class="bg-slate-50 sticky top-0 z-10 text-[11px] uppercase text-slate-500 font-bold tracking-wide shadow-sm">
+                                        <tr>
+                                            <th class="p-4 w-[25%]">Jovem / Turma</th>
+                                            <th class="p-4 w-[20%]">Empresa / Cidade</th>
+                                            <th class="p-4 w-[20%]">Supervisor</th>
+                                            <th class="p-4 w-[10%] text-center">Início/Fim</th>
+                                            <th class="p-4 w-[15%] text-center">Situação Visitas</th>
+                                            <th class="p-4 w-[10%] text-center">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tableBody" class="divide-y divide-slate-100 text-sm">
+                                        <tr>
+                                            <td colspan="6" class="p-12 text-center text-slate-400">
+                                                <div class="flex flex-col items-center gap-3">
+                                                    <div class="w-16 h-16 bg-blue-50 text-senac-blue rounded-full flex items-center justify-center mb-2">
+                                                        <i data-lucide="folder-open" class="w-8 h-8"></i>
+                                                    </div>
+                                                    <p class="text-sm font-bold text-slate-600">Aguardando dados...</p>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <div class="p-3 border-t border-slate-100 flex justify-between items-center bg-slate-50 rounded-b-2xl px-6">
+                                <span class="text-xs text-slate-500">Página <span id="pageDisplay" class="font-bold text-slate-700">1</span></span>
+                                <div class="flex gap-2">
+                                    <button onclick="changePage(-1)" class="px-3 py-1.5 border border-slate-200 rounded-lg hover:bg-white text-xs font-bold text-slate-600 disabled:opacity-50 transition-all shadow-sm" id="btnPrev">Anterior</button>
+                                    <button onclick="changePage(1)" class="px-3 py-1.5 border border-slate-200 rounded-lg hover:bg-white text-xs font-bold text-slate-600 disabled:opacity-50 transition-all shadow-sm" id="btnNext">Próxima</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </main>
+            </div>
+
+            <!-- VIEW 2: DASHBOARD FINANCEIRO (NOVO) -->
+            <div id="viewFinanceiro" class="hidden h-full w-full bg-slate-50/50 flex-col overflow-auto p-8">
+                
+                <div class="max-w-7xl mx-auto w-full">
+                    <div class="flex items-center justify-between mb-8">
+                        <div>
+                            <h2 class="text-2xl font-bold text-slate-800">Gestão Orçamentária de Visitas</h2>
+                            <p class="text-sm text-slate-500">Comparativo de orçamento disponível versus estimativa de custos para visitas pendentes.</p>
+                        </div>
+                        <div class="bg-white p-2 rounded-xl shadow-sm border border-slate-200 flex items-center gap-2">
+                            <span class="text-xs font-bold uppercase text-slate-400 px-2">Escopo Total:</span>
+                            <span class="text-sm font-bold text-senac-blue">Qualificação + Técnico</span>
+                        </div>
+                    </div>
+
+                    <!-- Painel de Inputs e KPIs -->
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                        
+                        <!-- Input: Orçamento -->
+                        <div class="card-bi p-5 border-l-4 border-l-emerald-500">
+                            <label class="block text-xs font-bold text-slate-400 uppercase mb-2">Orçamento Disponível (R$)</label>
+                            <input type="number" id="inputBudget" value="5000" class="money-input text-xl" oninput="updateFinancials()">
+                            <p class="text-[10px] text-slate-400 mt-2">Valor total em caixa para o período.</p>
+                        </div>
+
+                        <!-- Input: Custo Médio -->
+                        <div class="card-bi p-5 border-l-4 border-l-blue-500">
+                            <label class="block text-xs font-bold text-slate-400 uppercase mb-2">Custo Estimado por Visita (R$)</label>
+                            <input type="number" id="inputCost" value="85.50" class="money-input text-xl" oninput="updateFinancials()">
+                            <p class="text-[10px] text-slate-400 mt-2">Média (Km + Diária/Refeição).</p>
+                        </div>
+
+                        <!-- KPI: Visitas Pendentes -->
+                        <div class="card-bi p-5 flex flex-col justify-center">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-[10px] text-slate-400 font-bold uppercase mb-1">Visitas Pendentes (Total)</p>
+                                    <h3 class="text-3xl font-extrabold text-slate-700" id="finPendingVisits">0</h3>
+                                </div>
+                                <div class="p-3 bg-slate-100 rounded-full text-slate-500">
+                                    <i data-lucide="calendar-clock" class="w-6 h-6"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- KPI: Custo Total Estimado -->
+                        <div class="card-bi p-5 flex flex-col justify-center bg-slate-800 text-white border-none">
+                            <div>
+                                <p class="text-[10px] text-slate-400 font-bold uppercase mb-1">Custo Total Projetado</p>
+                                <h3 class="text-3xl font-extrabold text-white" id="finProjectedCost">R$ 0,00</h3>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Gráfico e Saldo -->
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                        <!-- Card de Saldo -->
+                        <div class="col-span-1 card-bi p-6 flex flex-col items-center justify-center text-center">
+                            <p class="text-xs font-bold text-slate-400 uppercase mb-2">Saldo Projetado (Orçamento - Gastos)</p>
+                            <h2 class="text-4xl font-extrabold mb-2" id="finBalance">R$ 0,00</h2>
+                            <div id="finStatusBadge" class="px-4 py-1 rounded-full text-xs font-bold uppercase bg-slate-100 text-slate-500">
+                                Aguardando Cálculo
+                            </div>
+                            <p class="text-xs text-slate-400 mt-4 max-w-[200px]">
+                                Se negativo, o orçamento não cobrirá todas as visitas pendentes.
+                            </p>
+                        </div>
+
+                        <!-- Gráfico Comparativo -->
+                        <div class="col-span-2 card-bi p-5">
+                            <h3 class="text-xs font-bold text-slate-600 uppercase mb-4">Comparativo Financeiro</h3>
+                            <div class="h-64 w-full relative">
+                                <canvas id="chartFinance"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tabela de Detalhamento por Região -->
+                    <div class="card-bi overflow-hidden">
+                        <div class="px-6 py-4 border-b border-slate-100 bg-slate-50/50">
+                            <h3 class="font-bold text-slate-700 text-sm">Estimativa de Gastos por Região</h3>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-sm">
+                                <thead class="bg-white text-xs uppercase text-slate-500 font-bold border-b border-slate-100">
                                     <tr>
-                                        <th class="p-4 w-[25%]">Jovem / Turma</th>
-                                        <th class="p-4 w-[20%]">Empresa / Cidade</th>
-                                        <th class="p-4 w-[20%]">Supervisor</th>
-                                        <th class="p-4 w-[10%] text-center">Início/Fim</th>
-                                        <th class="p-4 w-[15%] text-center">Situação Visitas</th>
-                                        <th class="p-4 w-[10%] text-center">Status</th>
+                                        <th class="p-4">Região / Cidade</th>
+                                        <th class="p-4 text-center">Visitas Pendentes</th>
+                                        <th class="p-4 text-right">Custo Estimado</th>
+                                        <th class="p-4 text-center">% do Orçamento</th>
                                     </tr>
                                 </thead>
-                                <tbody id="tableBody" class="divide-y divide-slate-100 text-sm">
-                                    <tr>
-                                        <td colspan="6" class="p-12 text-center text-slate-400">
-                                            <div class="flex flex-col items-center gap-3">
-                                                <div class="w-16 h-16 bg-blue-50 text-senac-blue rounded-full flex items-center justify-center mb-2">
-                                                    <i data-lucide="folder-open" class="w-8 h-8"></i>
-                                                </div>
-                                                <p class="text-sm font-bold text-slate-600">Aguardando dados...</p>
-                                            </div>
-                                        </td>
-                                    </tr>
+                                <tbody id="finTableBody" class="divide-y divide-slate-100">
+                                    <!-- Preenchido via JS -->
                                 </tbody>
                             </table>
                         </div>
-                        
-                        <div class="p-3 border-t border-slate-100 flex justify-between items-center bg-slate-50 rounded-b-2xl px-6">
-                            <span class="text-xs text-slate-500">Página <span id="pageDisplay" class="font-bold text-slate-700">1</span></span>
-                            <div class="flex gap-2">
-                                <button onclick="changePage(-1)" class="px-3 py-1.5 border border-slate-200 rounded-lg hover:bg-white text-xs font-bold text-slate-600 disabled:opacity-50 transition-all shadow-sm" id="btnPrev">Anterior</button>
-                                <button onclick="changePage(1)" class="px-3 py-1.5 border border-slate-200 rounded-lg hover:bg-white text-xs font-bold text-slate-600 disabled:opacity-50 transition-all shadow-sm" id="btnNext">Próxima</button>
-                            </div>
-                        </div>
                     </div>
+
                 </div>
-            </main>
-        </div>
-
-        <!-- VIEW 2: DASHBOARD FINANCEIRO (NOVO) -->
-        <div id="viewFinanceiro" class="hidden h-full w-full bg-slate-50/50 flex-col overflow-auto p-8">
-            
-            <div class="max-w-7xl mx-auto w-full">
-                <div class="flex items-center justify-between mb-8">
-                    <div>
-                        <h2 class="text-2xl font-bold text-slate-800">Gestão Orçamentária de Visitas</h2>
-                        <p class="text-sm text-slate-500">Comparativo de orçamento disponível versus estimativa de custos para visitas pendentes.</p>
-                    </div>
-                    <div class="bg-white p-2 rounded-xl shadow-sm border border-slate-200 flex items-center gap-2">
-                        <span class="text-xs font-bold uppercase text-slate-400 px-2">Escopo Total:</span>
-                        <span class="text-sm font-bold text-senac-blue">Qualificação + Técnico</span>
-                    </div>
-                </div>
-
-                <!-- Painel de Inputs e KPIs -->
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                    
-                    <!-- Input: Orçamento -->
-                    <div class="card-bi p-5 border-l-4 border-l-emerald-500">
-                        <label class="block text-xs font-bold text-slate-400 uppercase mb-2">Orçamento Disponível (R$)</label>
-                        <input type="number" id="inputBudget" value="5000" class="money-input text-xl" oninput="updateFinancials()">
-                        <p class="text-[10px] text-slate-400 mt-2">Valor total em caixa para o período.</p>
-                    </div>
-
-                    <!-- Input: Custo Médio -->
-                    <div class="card-bi p-5 border-l-4 border-l-blue-500">
-                        <label class="block text-xs font-bold text-slate-400 uppercase mb-2">Custo Estimado por Visita (R$)</label>
-                        <input type="number" id="inputCost" value="85.50" class="money-input text-xl" oninput="updateFinancials()">
-                        <p class="text-[10px] text-slate-400 mt-2">Média (Km + Diária/Refeição).</p>
-                    </div>
-
-                    <!-- KPI: Visitas Pendentes -->
-                    <div class="card-bi p-5 flex flex-col justify-center">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-[10px] text-slate-400 font-bold uppercase mb-1">Visitas Pendentes (Total)</p>
-                                <h3 class="text-3xl font-extrabold text-slate-700" id="finPendingVisits">0</h3>
-                            </div>
-                            <div class="p-3 bg-slate-100 rounded-full text-slate-500">
-                                <i data-lucide="calendar-clock" class="w-6 h-6"></i>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- KPI: Custo Total Estimado -->
-                    <div class="card-bi p-5 flex flex-col justify-center bg-slate-800 text-white border-none">
-                        <div>
-                            <p class="text-[10px] text-slate-400 font-bold uppercase mb-1">Custo Total Projetado</p>
-                            <h3 class="text-3xl font-extrabold text-white" id="finProjectedCost">R$ 0,00</h3>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Gráfico e Saldo -->
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-                    <!-- Card de Saldo -->
-                    <div class="col-span-1 card-bi p-6 flex flex-col items-center justify-center text-center">
-                        <p class="text-xs font-bold text-slate-400 uppercase mb-2">Saldo Projetado (Orçamento - Gastos)</p>
-                        <h2 class="text-4xl font-extrabold mb-2" id="finBalance">R$ 0,00</h2>
-                        <div id="finStatusBadge" class="px-4 py-1 rounded-full text-xs font-bold uppercase bg-slate-100 text-slate-500">
-                            Aguardando Cálculo
-                        </div>
-                        <p class="text-xs text-slate-400 mt-4 max-w-[200px]">
-                            Se negativo, o orçamento não cobrirá todas as visitas pendentes.
-                        </p>
-                    </div>
-
-                    <!-- Gráfico Comparativo -->
-                    <div class="col-span-2 card-bi p-5">
-                        <h3 class="text-xs font-bold text-slate-600 uppercase mb-4">Comparativo Financeiro</h3>
-                        <div class="h-64 w-full relative">
-                            <canvas id="chartFinance"></canvas>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Tabela de Detalhamento por Região -->
-                <div class="card-bi overflow-hidden">
-                    <div class="px-6 py-4 border-b border-slate-100 bg-slate-50/50">
-                        <h3 class="font-bold text-slate-700 text-sm">Estimativa de Gastos por Região</h3>
-                    </div>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left text-sm">
-                            <thead class="bg-white text-xs uppercase text-slate-500 font-bold border-b border-slate-100">
-                                <tr>
-                                    <th class="p-4">Região / Cidade</th>
-                                    <th class="p-4 text-center">Visitas Pendentes</th>
-                                    <th class="p-4 text-right">Custo Estimado</th>
-                                    <th class="p-4 text-center">% do Orçamento</th>
-                                </tr>
-                            </thead>
-                            <tbody id="finTableBody" class="divide-y divide-slate-100">
-                                <!-- Preenchido via JS -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
             </div>
         </div>
     </div>
@@ -784,7 +798,19 @@
             const displayRegion = currentUser.region || "Acesso Geral";
             document.getElementById('displayUserName').innerText = currentUser.name;
             document.getElementById('displayUserRegion').innerText = displayRegion;
-            document.getElementById('authModal').style.display = 'none';
+            
+            // ANIMAÇÃO DE SAÍDA DO LOGIN
+            const loginPage = document.getElementById('loginPage');
+            loginPage.classList.add('transition-opacity', 'duration-500', 'opacity-0');
+            setTimeout(() => {
+                loginPage.style.display = 'none';
+                
+                // EXIBE O PAINEL PRINCIPAL
+                const appContainer = document.getElementById('appContainer');
+                appContainer.classList.remove('hidden');
+                appContainer.classList.add('flex');
+                
+            }, 500);
             
             if (displayRegion !== "Acesso Geral" && displayRegion !== "") {
                 const filterReg = document.getElementById('filterRegiao');
