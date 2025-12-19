@@ -415,9 +415,9 @@
                         </div>
                         
                         <div class="flex gap-2">
-                            <!-- Novo Botão de Formulários -->
-                            <button onclick="generateWordForms()" class="flex items-center gap-2 px-4 py-2 bg-senac-blue hover:bg-blue-800 text-white rounded-lg text-xs font-bold transition-all shadow-md shadow-blue-200">
-                                <i data-lucide="file-text" class="w-4 h-4"></i> Gerar Formulários (Word)
+                            <!-- Novo Botão de Formulários com ID para atualização dinâmica -->
+                            <button id="btnGenerateWord" onclick="generateWordForms()" class="flex items-center gap-2 px-4 py-2 bg-senac-blue hover:bg-blue-800 text-white rounded-lg text-xs font-bold transition-all shadow-md shadow-blue-200">
+                                <i data-lucide="file-text" class="w-4 h-4"></i> Gerar Formulários (0)
                             </button>
 
                             <button onclick="exportFilteredReport()" class="flex items-center gap-2 px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-xs font-bold transition-all shadow-md shadow-emerald-200">
@@ -1072,6 +1072,14 @@
             if(kpiAtrasados) kpiAtrasados.innerText = atrasados;
             if(kpiNoPrazo) kpiNoPrazo.innerText = noPrazo;
 
+            // ATUALIZAÇÃO DINÂMICA DO BOTÃO GERAR FORMULÁRIOS
+            const btnWord = document.getElementById('btnGenerateWord');
+            if(btnWord) {
+                // Atualiza o texto do botão com a quantidade de itens filtrados
+                btnWord.innerHTML = `<i data-lucide="file-text" class="w-4 h-4"></i> Gerar Formulários (${filteredData.length})`;
+                if(typeof lucide !== 'undefined') lucide.createIcons();
+            }
+
             const ctxStatus = document.getElementById('chartStatus');
             if(ctxStatus) {
                 if(chartStatusInstance) chartStatusInstance.destroy();
@@ -1292,7 +1300,7 @@
         function generateWordForms() {
             if (filteredData.length === 0) return alert("Nenhum jovem selecionado para gerar formulários.");
             if (filteredData.length > 200) {
-                 if(!confirm("Você está prestes a gerar mais de 200 formulários em um único arquivo. Isso pode demorar. Deseja continuar?")) return;
+                 if(!confirm(`Você está prestes a gerar ${filteredData.length} formulários em um único arquivo. Isso pode demorar. Deseja continuar?`)) return;
             }
 
             const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
@@ -1303,7 +1311,6 @@
             function createLines(count) {
                 let linesHtml = '<table style="width: 100%; border-collapse: collapse; border: none; margin-top: 0px; margin-bottom: 5px;">';
                 for(let i=0; i<count; i++) {
-                    // Altura reduzida para 18px para ficar mais próximo, como na imagem 3
                     linesHtml += '<tr><td style="border-bottom: 1px solid black; height: 18px; border-left: none; border-right: none; border-top: none; padding: 0;">&nbsp;</td></tr>';
                 }
                 linesHtml += '</table>';
@@ -1326,13 +1333,12 @@
                         div.Section1 { page: Section1; }
                         body { font-family: 'Calibri', sans-serif; font-size: 10pt; }
                         table { width: 100%; border-collapse: collapse; border: none; margin-bottom: 5px; }
-                        td { border: 1px solid #000; padding: 4px; font-size: 10pt; vertical-align: middle; }
+                        td { border: 1px solid #000; padding: 1px 4px; font-size: 10pt; vertical-align: middle; } /* Padding reduzido no cabeçalho */
                         .no-border td { border: none; }
-                        .header-label { font-weight: bold; } /* Sem fundo cinza, sem largura fixa */
-                        .title-img { text-align: center; margin-bottom: 5px; }
-                        .main-title { text-align: center; font-weight: bold; font-size: 12pt; text-transform: uppercase; margin-bottom: 10px; }
-                        .subtitle { font-size: 9pt; text-align: justify; margin-bottom: 15px; }
-                        /* Títulos sem caixa e sem fundo, tamanho 11pt, negrito */
+                        .header-label { font-weight: bold; }
+                        .title-img { text-align: center; margin-bottom: 2px; }
+                        .main-title { text-align: center; font-weight: bold; font-size: 12pt; text-transform: uppercase; margin-bottom: 5px; margin-top: 0; }
+                        .subtitle { font-size: 9pt; text-align: justify; margin-bottom: 10px; }
                         .section-title { font-weight: bold; font-size: 11pt; margin-top: 15px; margin-bottom: 5px; text-transform: uppercase; } 
                         .question-text { font-size: 10pt; font-weight: bold; margin-bottom: 3px; }
                         .checkbox-group { margin-bottom: 5px; font-size: 10pt; }
@@ -1431,27 +1437,24 @@
 
                 <div class="section-title">OBSERVAÇÕES GERAIS</div>
                 <div class="question-text">Observações gerais do(a) responsável pela Prática Profissional no Senac (pontos de atenção, encaminhamentos necessários, sugestões, aspectos a serem retomados na próxima visita à empresa, dentre outros):</div>
-                ${createLines(8)} <!-- Aumentado para 8 linhas conforme pedido na imagem 4 -->
+                ${createLines(15)} <!-- Aumentado para 15 linhas -->
 
                 <br>
-                <table style="width: 100%; text-align: center; border: none; border-collapse: collapse; margin-top: 20px;">
+                <!-- ASSINATURAS PARTE 1 (SUPERVISOR) -->
+                <table style="width: 100%; text-align: center; border: none; border-collapse: collapse; margin-top: 10px;">
                     <tr>
-                        <td width="33%" style="border: none; vertical-align: bottom; padding-bottom: 5px;">
+                        <td width="50%" style="border: none; vertical-align: bottom; padding-bottom: 5px; padding-top: 20px;">
                              <div style="border-top: 1px solid black; width: 90%; margin: 0 auto; margin-bottom: 5px;"></div>
                              Assinatura do(a) Supervisor(a) da Empresa
                         </td>
-                        <td width="33%" style="border: none; vertical-align: bottom; padding-bottom: 5px;">
+                        <td width="50%" style="border: none; vertical-align: bottom; padding-bottom: 5px; padding-top: 20px;">
                             <div style="border-top: 1px solid black; width: 90%; margin: 0 auto; margin-bottom: 5px;"></div>
                              Assinatura do(a) Supervisor do Senac
-                        </td>
-                        <td width="33%" style="border: none; vertical-align: bottom; padding-bottom: 5px;">
-                             <div style="border-top: 1px solid black; width: 90%; margin: 0 auto; margin-bottom: 5px;"></div>
-                             Visto do(a) Aprendiz
                         </td>
                     </tr>
                 </table>
                 <br>
-                <div style="text-align: center; font-size: 10pt; margin-top: 30px;">Data: ____/______/________</div>
+                <div style="text-align: center; font-size: 10pt; margin-top: 60px;">Data: ____/______/________</div>
 
                 <br clear=all style='mso-special-character:line-break;page-break-before:always'>
 
@@ -1495,6 +1498,26 @@
                 <div class="question-text">Apresente sugestões para a melhoria da sua prática profissional e do Programa de Aprendizagem:</div>
                 ${createLines(2)}
 
+                <div class="section-title">OBSERVAÇÕES GERAIS</div>
+                <div class="question-text">Observações gerais do(a) responsável pela Prática Profissional no Senac (pontos de atenção, encaminhamentos necessários, sugestões, aspectos a serem retomados na próxima visita à empresa, dentre outros):</div>
+                ${createLines(15)} <!-- BLOCO ADICIONADO CONFORME PEDIDO (15 LINHAS) -->
+
+                <br>
+                <!-- ASSINATURAS PARTE 2 (APRENDIZ) -->
+                <table style="width: 100%; text-align: center; border: none; border-collapse: collapse; margin-top: 10px;">
+                    <tr>
+                        <td width="50%" style="border: none; vertical-align: bottom; padding-bottom: 5px; padding-top: 20px;">
+                            <div style="border-top: 1px solid black; width: 90%; margin: 0 auto; margin-bottom: 5px;"></div>
+                             Assinatura do(a) Supervisor do Senac
+                        </td>
+                        <td width="50%" style="border: none; vertical-align: bottom; padding-bottom: 5px; padding-top: 20px;">
+                             <div style="border-top: 1px solid black; width: 90%; margin: 0 auto; margin-bottom: 5px;"></div>
+                             Visto do(a) Aprendiz
+                        </td>
+                    </tr>
+                </table>
+                <br>
+                <div style="text-align: center; font-size: 10pt; margin-top: 60px;">Data: ____/______/________</div>
                 `;
             });
 
