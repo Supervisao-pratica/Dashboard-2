@@ -115,8 +115,13 @@
                         <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Senha de Acesso</label>
                         <div class="relative">
                             <input type="password" id="loginPassword" placeholder="Digite a senha de gestão" 
-                                class="w-full p-3 pl-10 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 font-medium outline-none focus:border-senac-blue focus:ring-2 focus:ring-blue-50">
+                                class="w-full p-3 pl-10 pr-10 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 font-medium outline-none focus:border-senac-blue focus:ring-2 focus:ring-blue-50">
                             <i data-lucide="lock" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none"></i>
+                            
+                            <!-- Botão Visualizar Senha -->
+                            <button type="button" onclick="togglePasswordVisibility()" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-senac-blue focus:outline-none" title="Mostrar/Ocultar Senha">
+                                <i id="eyeIcon" data-lucide="eye" class="w-4 h-4"></i>
+                            </button>
                         </div>
                         <div class="text-right mt-2">
                             <button onclick="triggerPasswordRecovery()" class="text-[10px] text-senac-orange font-bold hover:underline flex items-center gap-1 justify-end w-full">
@@ -158,17 +163,15 @@
                 </button>
 
                 <!-- Botões de Gerenciamento -->
-                <div class="mt-6 flex justify-between items-center px-2">
-                    <button onclick="toggleAddUser(true)" class="text-xs text-senac-orange font-bold hover:underline flex items-center gap-1">
-                        <i data-lucide="plus-circle" class="w-3 h-3"></i> Cadastro Local
-                    </button>
+                <div class="mt-6 flex justify-center items-center px-2">
+                    <!-- Opção de Cadastro Local Removida -->
                     <button onclick="resetUsersToDefault()" class="text-[10px] text-slate-400 hover:text-red-500 hover:underline">
                         Restaurar Padrão
                     </button>
                 </div>
             </div>
 
-            <!-- Formulário Novo Usuário -->
+            <!-- Formulário Novo Usuário (Mantido escondido caso precise reativar no futuro, mas sem botão de acesso) -->
             <div id="addUserForm" class="hidden animate-fade-in">
                 <h3 class="text-sm font-bold text-slate-700 mb-4 flex items-center gap-2">
                     <i data-lucide="user-plus" class="w-4 h-4 text-senac-orange"></i> Novo Cadastro Local
@@ -587,10 +590,24 @@
             }
         }
 
-        // --- NOVA LÓGICA DE RECUPERAÇÃO DE SENHA (SEGURA) ---
+        // --- NOVA LÓGICA DE RECUPERAÇÃO DE SENHA E VISUALIZAÇÃO ---
         function triggerPasswordRecovery() {
             const recoveryMsg = document.getElementById('recoveryMsg');
             recoveryMsg.classList.remove('hidden');
+        }
+
+        function togglePasswordVisibility() {
+            const passwordInput = document.getElementById('loginPassword');
+            const eyeIcon = document.getElementById('eyeIcon');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                eyeIcon.setAttribute('data-lucide', 'eye-off');
+            } else {
+                passwordInput.type = 'password';
+                eyeIcon.setAttribute('data-lucide', 'eye');
+            }
+            lucide.createIcons();
         }
 
         function copyEmail() {
@@ -1352,9 +1369,33 @@
                 <div class=Section1>
             `;
 
+            // Helper para comparar horários e pegar o menor
+            function getEarliestTime(t1, t2) {
+                // Função para converter "HH:mm" em minutos
+                const toMinutes = (timeStr) => {
+                    if (!timeStr || typeof timeStr !== 'string') return 99999; // Valor alto se inválido
+                    const parts = timeStr.trim().split(':');
+                    if (parts.length < 2) return 99999;
+                    const h = parseInt(parts[0]);
+                    const m = parseInt(parts[1]);
+                    if (isNaN(h) || isNaN(m)) return 99999;
+                    return (h * 60) + m;
+                };
+
+                const m1 = toMinutes(t1);
+                const m2 = toMinutes(t2);
+
+                if (m1 === 99999 && m2 === 99999) return "Não Informado";
+                if (m1 < m2) return t1;
+                return t2;
+            }
+
             // Loop para criar uma página por aluno
             filteredData.forEach((item, index) => {
                 if (index > 0) content += `<br clear=all style='mso-special-character:line-break;page-break-before:always'>`;
+
+                // Calcula o horário mais cedo para exibir
+                const earliestTime = getEarliestTime(item.hrTeoria, item.hrPratica);
 
                 content += `
                 <!-- PARTE 1: SUPERVISOR -->
@@ -1463,9 +1504,9 @@
                 <br clear=all style='mso-special-character:line-break;page-break-before:always'>
 
                 <!-- PARTE 2: APRENDIZ -->
-                <div class="section-title">Informações do(a) aprendiz:</div>
+                <div class="section-title">Informações do(a) aprendiz: ${item.nome}</div>
                 <br>
-                <div class="question-text">Horário de Trabalho: <strong>${item.hrPratica}</strong></div>
+                <div class="question-text">Horário de Trabalho: <strong>${earliestTime}</strong></div>
 
                 <div class="section-title">1. Considerações gerais do(a) aprendiz sobre a prática profissional</div>
                 <div class="question-text">1.1 Avanços alcançados</div>
