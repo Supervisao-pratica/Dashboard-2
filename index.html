@@ -1344,31 +1344,48 @@
                     <style>
                         @page Section1 {
                             size: 595.3pt 841.9pt; 
-                            margin: 1.0cm 1.5cm 1.0cm 1.5cm; 
+                            margin: 3.5cm 1.5cm 1.0cm 1.5cm; /* Top Margin increased to fit Header */
                             mso-header-margin: 35.4pt; 
                             mso-footer-margin: 35.4pt; 
                             mso-paper-source: 0;
+                            mso-header: h1;
                             mso-footer: f1;
                         }
                         div.Section1 { page: Section1; }
                         div.f1 { mso-element: footer; }
+                        div.h1 { mso-element: header; }
+
                         body { font-family: 'Calibri', sans-serif; font-size: 11pt; }
                         table { width: 100%; border-collapse: collapse; border: none; margin-bottom: 5px; }
                         td { border: 1px solid #000; padding: 2px 4px; font-size: 11pt; vertical-align: middle; }
                         .no-border td { border: none; }
                         .header-label { font-weight: bold; }
+                        
+                        /* Layout do Cabeçalho */
                         .title-img { text-align: center; margin-bottom: 2px; }
                         .main-title { text-align: center; font-weight: bold; font-size: 12pt; text-transform: uppercase; margin-bottom: 5px; margin-top: 0; }
+                        
                         .subtitle { font-size: 9pt; text-align: justify; margin-bottom: 10px; }
                         .section-title { font-weight: bold; font-size: 11pt; margin-top: 15px; margin-bottom: 5px; text-transform: uppercase; } 
-                        .question-text { font-size: 11pt; font-weight: normal; margin-bottom: 3px; } /* Ajuste: Texto normal, não negrito */
+                        .question-text { font-size: 11pt; font-weight: normal; margin-bottom: 3px; }
                         .checkbox-group { margin-bottom: 5px; font-size: 11pt; }
                         
+                        /* CLASSE PARA EVITAR QUEBRA DE PÁGINA NO MEIO DO BLOCO */
+                        .keep-together { page-break-inside: avoid; break-inside: avoid; }
+
                         .page-break { page-break-before: always; }
                     </style>
                 </head>
                 <body>
                 <div class=Section1>
+                
+                <!-- CABEÇALHO GLOBAL (Repete em todas as páginas) -->
+                <div style='mso-element:header' id=h1>
+                    <div class="title-img">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/8/86/Senac_logo.svg" width="80" height="40" alt="Senac">
+                    </div>
+                    <div class="main-title">ACOMPANHAMENTO DO SENAC NO DESENVOLVIMENTO DA PRÁTICA PROFISSIONAL</div>
+                </div>
             `;
 
             // Helper para comparar horários e pegar o menor
@@ -1399,11 +1416,6 @@
 
                 content += `
                 <!-- PARTE 1: SUPERVISOR -->
-                <div class="title-img">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/8/86/Senac_logo.svg" width="80" height="40" alt="Senac">
-                </div>
-                <div class="main-title">ACOMPANHAMENTO DO SENAC NO DESENVOLVIMENTO DA PRÁTICA PROFISSIONAL</div>
-                
                 <div class="subtitle">
                     Este formulário deverá ser preenchido pelo(a) supervisor(a) da prática profissional designado(a) pelo Senac, em período não superior a 90 dias, conforme previsto na legislação do Programa de Aprendizagem. As visitas técnicas periódicas integram o processo formativo, garantindo a verificação do desenvolvimento das competências dos(as) aprendizes no ambiente de trabalho.
                 </div>
@@ -1441,149 +1453,183 @@
 
                 <div class="section-title">Informações sobre a prática profissional</div>
 
-                <div class="section-title">1. Rodízio de atribuições/atividades</div>
-                <div class="question-text">A empresa está proporcionando o rodízio de atribuições de acordo com as descritas na CBO e inseridas no Plano de Atividades, anexo ao contrato de trabalho especial de aprendizagem?</div>
-                <div class="checkbox-group">( ) Sim &nbsp;&nbsp;&nbsp; ( ) Não</div>
-                <div class="question-text">Informar quais atividades o(a) jovem está desenvolvendo:</div>
-                ${createLines(3)}
+                <div class="keep-together">
+                    <div class="section-title">1. Rodízio de atribuições/atividades</div>
+                    <div class="question-text">A empresa está proporcionando o rodízio de atribuições de acordo com as descritas na CBO e inseridas no Plano de Atividades, anexo ao contrato de trabalho especial de aprendizagem?</div>
+                    <div class="checkbox-group">( ) Sim &nbsp;&nbsp;&nbsp; ( ) Não</div>
+                    <div class="question-text">Informar quais atividades o(a) jovem está desenvolvendo:</div>
+                    ${createLines(3)}
+                </div>
 
-                <div class="section-title">2. Direitos e deveres trabalhistas</div>
-                <div class="question-text">A empresa está cumprindo os aspectos contratuais estabelecidos para o(a) aprendiz?</div>
-                <div class="checkbox-group">( ) Sim &nbsp;&nbsp;&nbsp; ( ) Não</div>
-                <div class="question-text">Se sim, quais?</div>
-                <div class="checkbox-group">( ) Salário &nbsp;&nbsp; ( ) VT &nbsp;&nbsp; ( ) Computador</div>
-                <div class="question-text">Outros:</div>
-                ${createLines(1)}
+                <div class="keep-together">
+                    <div class="section-title">2. Direitos e deveres trabalhistas</div>
+                    <div class="question-text">A empresa está cumprindo os aspectos contratuais estabelecidos para o(a) aprendiz?</div>
+                    <div class="checkbox-group">( ) Sim &nbsp;&nbsp;&nbsp; ( ) Não</div>
+                    <div class="question-text">Se sim, quais?</div>
+                    <div class="checkbox-group">( ) Salário &nbsp;&nbsp; ( ) VT &nbsp;&nbsp; ( ) Computador</div>
+                    <div class="question-text">Outros:</div>
+                    ${createLines(1)}
+                </div>
 
-                <div class="question-text" style="margin-top:10px;">Descrição dos aspectos contratuais que a empresa não está cumprindo, e, caso necessário, dos encaminhamentos a serem adotados em situações de desconformidade com a legislação trabalhista e/ou com o Programa de Aprendizagem:</div>
-                ${createLines(3)}
+                <div class="keep-together">
+                    <div class="question-text" style="margin-top:10px;">Descrição dos aspectos contratuais que a empresa não está cumprindo, e, caso necessário, dos encaminhamentos a serem adotados em situações de desconformidade com a legislação trabalhista e/ou com o Programa de Aprendizagem:</div>
+                    ${createLines(3)}
+                </div>
 
-                <div class="question-text" style="margin-top:10px;">O(A) aprendiz está cumprindo os aspectos contratuais estabelecidos?</div>
-                <div class="checkbox-group">( ) Sim &nbsp;&nbsp;&nbsp; ( ) Não</div>
-                <div class="question-text">Se sim, quais?</div>
-                <div class="checkbox-group">( ) Frequência &nbsp;&nbsp; ( ) Pontualidade &nbsp;&nbsp; ( ) Bom Comportamento &nbsp;&nbsp; ( ) Uso do AVA</div>
-                
-                <div class="question-text">Outras observações sobre o cumprimento ou não dos aspectos contratuais pelo(a) aprendiz:</div>
-                ${createLines(2)}
+                <div class="keep-together">
+                    <div class="question-text" style="margin-top:10px;">O(A) aprendiz está cumprindo os aspectos contratuais estabelecidos?</div>
+                    <div class="checkbox-group">( ) Sim &nbsp;&nbsp;&nbsp; ( ) Não</div>
+                    <div class="question-text">Se sim, quais?</div>
+                    <div class="checkbox-group">( ) Frequência &nbsp;&nbsp; ( ) Pontualidade &nbsp;&nbsp; ( ) Bom Comportamento &nbsp;&nbsp; ( ) Uso do AVA</div>
+                    
+                    <div class="question-text">Outras observações sobre o cumprimento ou não dos aspectos contratuais pelo(a) aprendiz:</div>
+                    ${createLines(2)}
+                </div>
 
-                <div class="section-title">3. Ambiente de trabalho</div>
-                <div class="question-text">Como você avalia o ambiente de trabalho da empresa?</div>
-                ${createLines(2)}
+                <div class="keep-together">
+                    <div class="section-title">3. Ambiente de trabalho</div>
+                    <div class="question-text">Como você avalia o ambiente de trabalho da empresa?</div>
+                    ${createLines(2)}
+                </div>
 
-                <div class="section-title">4. Contato com o(a) supervisor(a) na empresa</div>
-                <div class="question-text">Avalie a qualidade do contato e interação com o(a) supervisor(a) responsável pela prática profissional na empresa:</div>
-                ${createLines(2)}
+                <div class="keep-together">
+                    <div class="section-title">4. Contato com o(a) supervisor(a) na empresa</div>
+                    <div class="question-text">Avalie a qualidade do contato e interação com o(a) supervisor(a) responsável pela prática profissional na empresa:</div>
+                    ${createLines(2)}
+                </div>
 
-                <div class="section-title">5. Sugestões</div>
-                <div class="question-text">Apresente sugestões para a melhoria da sua prática profissional e do Programa de Aprendizagem:</div>
-                ${createLines(2)}
+                <div class="keep-together">
+                    <div class="section-title">5. Sugestões</div>
+                    <div class="question-text">Apresente sugestões para a melhoria da sua prática profissional e do Programa de Aprendizagem:</div>
+                    ${createLines(2)}
+                </div>
 
-                <div class="section-title">OBSERVAÇÕES GERAIS</div>
-                <div class="question-text">Observações gerais do(a) responsável pela Prática Profissional no Senac:</div>
-                ${createLines(15)} 
+                <div class="keep-together">
+                    <div class="section-title">OBSERVAÇÕES GERAIS</div>
+                    <div class="question-text">Observações gerais do(a) responsável pela Prática Profissional no Senac:</div>
+                    <!-- REDUZIDO PARA 8 LINHAS PARA ECONOMIZAR ESPAÇO -->
+                    ${createLines(8)} 
+                </div>
 
                 <br><br>
                 <!-- ASSINATURAS PARTE 1 (SUPERVISOR) -->
-                <table style="width: 100%; border: none; border-collapse: collapse; margin-top: 20px;">
-                    <tr>
-                         <td width="45%" style="border: none; padding: 0 10px; vertical-align: bottom; height: 40px;">
-                            <!-- Espaço para assinar -->
-                        </td>
-                        <td width="10%" style="border: none;"></td>
-                        <td width="45%" style="border: none; padding: 0 10px; vertical-align: bottom; height: 40px;">
-                            <!-- Espaço para assinar -->
-                        </td>
-                    </tr>
-                    <tr>
-                        <td width="45%" style="border: none; border-top: 1px solid black; text-align: center; padding-top: 5px;">
-                             Assinatura do(a) Supervisor(a) da Empresa
-                        </td>
-                        <td width="10%" style="border: none;"></td>
-                        <td width="45%" style="border: none; border-top: 1px solid black; text-align: center; padding-top: 5px;">
-                             Assinatura do(a) Supervisor do Senac
-                        </td>
-                    </tr>
-                </table>
+                <div class="keep-together">
+                    <table style="width: 100%; border: none; border-collapse: collapse; margin-top: 20px;">
+                        <tr>
+                             <td width="45%" style="border: none; padding: 0 10px; vertical-align: bottom; height: 40px;">
+                                <!-- Espaço para assinar -->
+                            </td>
+                            <td width="10%" style="border: none;"></td>
+                            <td width="45%" style="border: none; padding: 0 10px; vertical-align: bottom; height: 40px;">
+                                <!-- Espaço para assinar -->
+                            </td>
+                        </tr>
+                        <tr>
+                            <td width="45%" style="border: none; border-top: 1px solid black; text-align: center; padding-top: 5px;">
+                                 Assinatura do(a) Supervisor(a) da Empresa
+                            </td>
+                            <td width="10%" style="border: none;"></td>
+                            <td width="45%" style="border: none; border-top: 1px solid black; text-align: center; padding-top: 5px;">
+                                 Assinatura do(a) Supervisor do Senac
+                            </td>
+                        </tr>
+                    </table>
 
-                <br><br><br><br>
-                <div style="text-align: right; font-size: 11pt; margin-top: 10px; margin-right: 0px;"><strong>Data:</strong> ____/______/________</div>
+                    <br><br><br><br>
+                    <div style="text-align: right; font-size: 11pt; margin-top: 10px; margin-right: 0px;"><strong>Data:</strong> ____/______/________</div>
+                </div>
 
                 <br clear=all style='mso-special-character:line-break;page-break-before:always'>
 
-                <!-- PARTE 2: APRENDIZ (COM CABEÇALHO) -->
-                <div class="title-img">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/8/86/Senac_logo.svg" width="80" height="40" alt="Senac">
-                </div>
-                <div class="main-title">ACOMPANHAMENTO DO SENAC NO DESENVOLVIMENTO DA PRÁTICA PROFISSIONAL</div>
-
+                <!-- PARTE 2: APRENDIZ (CABEÇALHO JÁ INCLUÍDO AUTOMATICAMENTE) -->
+                
                 <div class="section-title">Informações do(a) aprendiz: ${item.nome}</div>
                 <br>
                 <div class="question-text"><strong>Horário de Trabalho:</strong> ${earliestTime}</div>
 
-                <div class="section-title">1. Considerações gerais do(a) aprendiz sobre a prática profissional</div>
-                <div class="question-text"><strong>1.1 Avanços alcançados</strong></div>
-                <div class="question-text">Descreva os principais avanços que você alcançou durante a prática profissional.</div>
-                ${createLines(3)}
+                <div class="keep-together">
+                    <div class="section-title">1. Considerações gerais do(a) aprendiz sobre a prática profissional</div>
+                    <div class="question-text"><strong>1.1 Avanços alcançados</strong></div>
+                    <div class="question-text">Descreva os principais avanços que você alcançou durante a prática profissional.</div>
+                    ${createLines(3)}
+                </div>
 
-                <div class="question-text" style="margin-top:10px;"><strong>1.2 Dificuldades encontradas</strong></div>
-                <div class="question-text">Relate as principais dificuldades que você encontrou durante a prática profissional.</div>
-                ${createLines(3)}
+                <div class="keep-together">
+                    <div class="question-text" style="margin-top:10px;"><strong>1.2 Dificuldades encontradas</strong></div>
+                    <div class="question-text">Relate as principais dificuldades que você encontrou durante a prática profissional.</div>
+                    ${createLines(3)}
+                </div>
 
-                <div class="section-title">2. Aspectos contratuais</div>
-                <div class="question-text">Você está ciente e cumprindo os aspectos contratuais estabelecidos?</div>
-                <div class="checkbox-group">( ) Sim &nbsp;&nbsp;&nbsp; ( ) Não</div>
-                <div class="question-text">Se sim, quais?</div>
-                <div class="checkbox-group">( ) Frequência &nbsp;&nbsp; ( ) Pontualidade &nbsp;&nbsp; ( ) Bom Comportamento &nbsp;&nbsp; ( ) Uso do AVA</div>
+                <div class="keep-together">
+                    <div class="section-title">2. Aspectos contratuais</div>
+                    <div class="question-text">Você está ciente e cumprindo os aspectos contratuais estabelecidos?</div>
+                    <div class="checkbox-group">( ) Sim &nbsp;&nbsp;&nbsp; ( ) Não</div>
+                    <div class="question-text">Se sim, quais?</div>
+                    <div class="checkbox-group">( ) Frequência &nbsp;&nbsp; ( ) Pontualidade &nbsp;&nbsp; ( ) Bom Comportamento &nbsp;&nbsp; ( ) Uso do AVA</div>
+                </div>
 
-                <div class="question-text" style="margin-top:10px;">A empresa está cumprindo os aspectos contratuais estabelecidos em contrato de trabalho especial?</div>
-                <div class="checkbox-group">( ) Sim &nbsp;&nbsp;&nbsp; ( ) Não</div>
-                <div class="question-text">Se sim, quais?</div>
-                <div class="checkbox-group">( ) Salário &nbsp;&nbsp; ( ) VT &nbsp;&nbsp; ( ) Computador</div>
-                
-                <div class="question-text">Observações (se houver necessidade de indicar)</div>
-                ${createLines(2)}
+                <div class="keep-together">
+                    <div class="question-text" style="margin-top:10px;">A empresa está cumprindo os aspectos contratuais estabelecidos em contrato de trabalho especial?</div>
+                    <div class="checkbox-group">( ) Sim &nbsp;&nbsp;&nbsp; ( ) Não</div>
+                    <div class="question-text">Se sim, quais?</div>
+                    <div class="checkbox-group">( ) Salário &nbsp;&nbsp; ( ) VT &nbsp;&nbsp; ( ) Computador</div>
+                    
+                    <div class="question-text">Observações (se houver necessidade de indicar)</div>
+                    ${createLines(2)}
+                </div>
 
-                <div class="section-title">3. Ambiente de trabalho</div>
-                <div class="question-text">Como você avalia o ambiente de trabalho da empresa?</div>
-                ${createLines(2)}
+                <div class="keep-together">
+                    <div class="section-title">3. Ambiente de trabalho</div>
+                    <div class="question-text">Como você avalia o ambiente de trabalho da empresa?</div>
+                    ${createLines(2)}
+                </div>
 
-                <div class="section-title">4. Contato com o(a) supervisor(a) na empresa</div>
-                <div class="question-text">Avalie a qualidade do contato e interação com o(a) supervisor(a) responsável pela prática profissional na empresa:</div>
-                ${createLines(2)}
+                <div class="keep-together">
+                    <div class="section-title">4. Contato com o(a) supervisor(a) na empresa</div>
+                    <div class="question-text">Avalie a qualidade do contato e interação com o(a) supervisor(a) responsável pela prática profissional na empresa:</div>
+                    ${createLines(2)}
+                </div>
 
-                <div class="section-title">5. Sugestões</div>
-                <div class="question-text">Apresente sugestões para a melhoria da sua prática profissional e do Programa de Aprendizagem:</div>
-                ${createLines(2)}
+                <div class="keep-together">
+                    <div class="section-title">5. Sugestões</div>
+                    <div class="question-text">Apresente sugestões para a melhoria da sua prática profissional e do Programa de Aprendizagem:</div>
+                    ${createLines(2)}
+                </div>
 
-                <div class="section-title">OBSERVAÇÕES GERAIS</div>
-                <div class="question-text">Observações gerais do(a) responsável pela Prática Profissional no Senac:</div>
-                ${createLines(15)} 
+                <div class="keep-together">
+                    <div class="section-title">OBSERVAÇÕES GERAIS</div>
+                    <div class="question-text">Observações gerais do(a) responsável pela Prática Profissional no Senac:</div>
+                    <!-- REDUZIDO PARA 8 LINHAS -->
+                    ${createLines(8)} 
+                </div>
 
                 <br><br>
                 <!-- ASSINATURAS PARTE 2 (APRENDIZ) -->
-                <table style="width: 100%; border: none; border-collapse: collapse; margin-top: 20px;">
-                    <tr>
-                         <td width="45%" style="border: none; padding: 0 10px; vertical-align: bottom; height: 40px;">
-                            <!-- Espaço para assinar -->
-                        </td>
-                        <td width="10%" style="border: none;"></td>
-                        <td width="45%" style="border: none; padding: 0 10px; vertical-align: bottom; height: 40px;">
-                            <!-- Espaço para assinar -->
-                        </td>
-                    </tr>
-                    <tr>
-                        <td width="45%" style="border: none; border-top: 1px solid black; text-align: center; padding-top: 5px;">
-                             Assinatura do(a) Supervisor do Senac
-                        </td>
-                        <td width="10%" style="border: none;"></td>
-                        <td width="45%" style="border: none; border-top: 1px solid black; text-align: center; padding-top: 5px;">
-                             Visto do(a) Aprendiz
-                        </td>
-                    </tr>
-                </table>
+                <div class="keep-together">
+                    <table style="width: 100%; border: none; border-collapse: collapse; margin-top: 20px;">
+                        <tr>
+                             <td width="45%" style="border: none; padding: 0 10px; vertical-align: bottom; height: 40px;">
+                                <!-- Espaço para assinar -->
+                            </td>
+                            <td width="10%" style="border: none;"></td>
+                            <td width="45%" style="border: none; padding: 0 10px; vertical-align: bottom; height: 40px;">
+                                <!-- Espaço para assinar -->
+                            </td>
+                        </tr>
+                        <tr>
+                            <td width="45%" style="border: none; border-top: 1px solid black; text-align: center; padding-top: 5px;">
+                                 Assinatura do(a) Supervisor do Senac
+                            </td>
+                            <td width="10%" style="border: none;"></td>
+                            <td width="45%" style="border: none; border-top: 1px solid black; text-align: center; padding-top: 5px;">
+                                 Visto do(a) Aprendiz
+                            </td>
+                        </tr>
+                    </table>
 
-                <br><br><br><br>
-                <div style="text-align: right; font-size: 11pt; margin-top: 10px; margin-right: 0px;"><strong>Data:</strong> ____/______/________</div>
+                    <br><br><br><br>
+                    <div style="text-align: right; font-size: 11pt; margin-top: 10px; margin-right: 0px;"><strong>Data:</strong> ____/______/________</div>
+                </div>
                 `;
             });
 
