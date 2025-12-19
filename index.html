@@ -1288,7 +1288,7 @@
             XLSX.writeFile(wb, `Relatorio_Senac_${currentScope}_${new Date().toLocaleDateString('pt-BR').replace(/\//g,'-')}.xlsx`);
         }
 
-        // --- GERADOR DE FORMULÁRIOS WORD (MAIL MERGE) ---
+        // --- GERADOR DE FORMULÁRIOS WORD (MAIL MERGE OFICIAL) ---
         function generateWordForms() {
             if (filteredData.length === 0) return alert("Nenhum jovem selecionado para gerar formulários.");
             if (filteredData.length > 200) {
@@ -1299,88 +1299,152 @@
             const currentMonth = monthNames[new Date().getMonth()];
             const currentYear = new Date().getFullYear();
 
-            // Cabeçalho do Word HTML
+            // Cabeçalho do Word HTML - CSS ajustado para visualização oficial
             let content = `
                 <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
                 <head>
                     <meta charset='utf-8'>
                     <style>
-                        body { font-family: 'Arial', sans-serif; }
-                        .page { page-break-after: always; margin: 2cm; }
-                        .header-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; border: 1px solid #000; }
-                        .header-table td { border: 1px solid #000; padding: 5px; font-size: 11px; }
-                        .label { font-weight: bold; background-color: #f0f0f0; width: 150px; }
-                        .title { text-align: center; font-size: 14px; font-weight: bold; padding: 10px; background-color: #e0e0e0; border-bottom: 1px solid #000; }
-                        .section-title { font-weight: bold; font-size: 12px; margin-top: 15px; margin-bottom: 5px; text-decoration: underline; }
-                        .content-box { border: 1px solid #999; height: 100px; margin-bottom: 10px; }
+                        @page Section1 {
+                            size: 595.3pt 841.9pt; 
+                            margin: 1.0cm 1.5cm 1.0cm 1.5cm; 
+                            mso-header-margin: 35.4pt; 
+                            mso-footer-margin: 35.4pt; 
+                            mso-paper-source: 0;
+                        }
+                        div.Section1 { page: Section1; }
+                        body { font-family: 'Arial', sans-serif; font-size: 11pt; }
+                        table { width: 100%; border-collapse: collapse; border: none; margin-bottom: 5px; }
+                        td { padding: 3px; font-size: 10pt; vertical-align: top; }
+                        .header-box { border: 1px solid #000; }
+                        .header-label { font-weight: bold; background-color: #f2f2f2; width: 140px; }
+                        .title-img { text-align: center; margin-bottom: 5px; }
+                        .main-title { text-align: center; font-weight: bold; font-size: 12pt; text-transform: uppercase; margin-bottom: 10px; }
+                        .subtitle { font-size: 9pt; text-align: justify; margin-bottom: 15px; }
+                        .section-title { font-weight: bold; font-size: 11pt; margin-top: 15px; margin-bottom: 5px; background-color: #e6e6e6; padding: 2px; border: 1px solid #000; }
+                        .question-text { font-size: 10pt; font-weight: bold; margin-bottom: 3px; }
+                        .checkbox-group { margin-bottom: 5px; font-size: 10pt; }
+                        .input-line { border-bottom: 1px solid #000; display: inline-block; width: 98%; height: 18px; margin-top: 2px; }
+                        .large-input { border: 1px solid #000; height: 60px; width: 100%; margin-top: 5px; }
+                        .large-input-obs { border: 1px solid #000; height: 120px; width: 100%; margin-top: 5px; }
+                        .signature-table { margin-top: 40px; width: 100%; text-align: center; font-size: 9pt; }
+                        .signature-line { border-top: 1px solid #000; width: 90%; margin: 0 auto; padding-top: 5px; }
+                        .page-break { page-break-before: always; mso-special-character: line-break; }
                     </style>
                 </head>
                 <body>
+                <div class=Section1>
             `;
 
             // Loop para criar uma página por aluno
-            filteredData.forEach(item => {
+            filteredData.forEach((item, index) => {
+                if (index > 0) content += `<br clear=all style='mso-special-character:line-break;page-break-before:always'>`;
+
                 content += `
-                <div class="page">
-                    <div class="title">RELATÓRIO DE VISITA DE SUPERVISÃO - APRENDIZAGEM</div>
-                    <br>
-                    <table class="header-table">
-                        <tr>
-                            <td class="label">Aprendiz:</td>
-                            <td colspan="3">${item.nome}</td>
-                        </tr>
-                        <tr>
-                            <td class="label">Curso:</td>
-                            <td colspan="3">${item.curso}</td>
-                        </tr>
-                        <tr>
-                            <td class="label">Turma:</td>
-                            <td>${item.turma}</td>
-                            <td class="label">Mês da Avaliação:</td>
-                            <td>${currentMonth}/${currentYear}</td>
-                        </tr>
-                        <tr>
-                            <td class="label">Empresa:</td>
-                            <td colspan="3">${item.empresa}</td>
-                        </tr>
-                        <tr>
-                            <td class="label">Cidade:</td>
-                            <td>${item.cidade}</td>
-                            <td class="label">Contato (Celular):</td>
-                            <td>${item.supervisor.cel}</td>
-                        </tr>
-                        <tr>
-                            <td class="label">Supervisor(a) Senac:</td>
-                            <td>${item.supervisor.nome}</td>
-                            <td class="label">Supervisor(a) Empresa:</td>
-                            <td>${item.supervisor.empresa}</td>
-                        </tr>
-                    </table>
-
-                    <div class="section-title">1. Acompanhamento das Atividades Práticas:</div>
-                    <p style="font-size: 11px;">O jovem está realizando as atividades conforme o plano de curso?</p>
-                    <div class="content-box"></div>
-
-                    <div class="section-title">2. Desempenho e Comportamento:</div>
-                    <p style="font-size: 11px;">Assiduidade, pontualidade, interesse e relacionamento interpessoal.</p>
-                    <div class="content-box"></div>
-
-                    <div class="section-title">3. Observações Gerais:</div>
-                    <div class="content-box"></div>
-
-                    <br><br><br>
-                    <table style="width: 100%; text-align: center; font-size: 11px;">
-                        <tr>
-                            <td style="width: 33%; border-top: 1px solid #000;">Supervisor(a) Empresa</td>
-                            <td style="width: 33%; border-top: 1px solid #000;">Supervisor(a) Senac</td>
-                            <td style="width: 33%; border-top: 1px solid #000;">Aprendiz</td>
-                        </tr>
-                    </table>
+                <div class="title-img">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/8/86/Senac_logo.svg" width="80" height="40" alt="Senac">
                 </div>
+                <div class="main-title">ACOMPANHAMENTO DO SENAC NO DESENVOLVIMENTO DA PRÁTICA PROFISSIONAL</div>
+                
+                <div class="subtitle">
+                    Este formulário deverá ser preenchido pelo(a) supervisor(a) da prática profissional designado(a) pelo Senac, em período não superior a 90 dias, conforme previsto na legislação do Programa de Aprendizagem. As visitas técnicas periódicas integram o processo formativo, garantindo a verificação do desenvolvimento das competências dos(as) aprendizes no ambiente de trabalho.
+                </div>
+
+                <table class="header-box" border="1">
+                    <tr>
+                        <td class="header-label">Aprendiz:</td>
+                        <td colspan="3">${item.nome}</td>
+                    </tr>
+                    <tr>
+                        <td class="header-label">Curso:</td>
+                        <td colspan="3">${item.curso}</td>
+                    </tr>
+                    <tr>
+                        <td class="header-label">Turma:</td>
+                        <td>${item.turma}</td>
+                        <td class="header-label" style="width: 100px;">Mês Avaliação:</td>
+                        <td>${currentMonth}/${currentYear}</td>
+                    </tr>
+                    <tr>
+                        <td class="header-label">Empresa:</td>
+                        <td colspan="3">${item.empresa}</td>
+                    </tr>
+                    <tr>
+                        <td class="header-label">Cidade:</td>
+                        <td>${item.cidade}</td>
+                        <td class="header-label">Contato:</td>
+                        <td>${item.supervisor.cel}</td>
+                    </tr>
+                    <tr>
+                        <td class="header-label">Sup. Senac:</td>
+                        <td>${item.supervisor.nome}</td>
+                        <td class="header-label">Sup. Empresa:</td>
+                        <td>${item.supervisor.empresa}</td>
+                    </tr>
+                </table>
+
+                <div class="section-title">1. Rodízio de atribuições/atividades</div>
+                <div class="question-text">A empresa está proporcionando o rodízio de atribuições de acordo com as descritas na CBO e inseridas no Plano de Atividades, anexo ao contrato de trabalho especial de aprendizagem?</div>
+                <div class="checkbox-group">( ) Sim &nbsp;&nbsp;&nbsp; ( ) Não</div>
+                <div class="question-text">Informar quais atividades o(a) jovem está desenvolvendo:</div>
+                <div class="large-input"></div>
+
+                <div class="section-title">2. Direitos e deveres trabalhistas</div>
+                <div class="question-text">A empresa está cumprindo os aspectos contratuais estabelecidos para o(a) aprendiz?</div>
+                <div class="checkbox-group">( ) Sim &nbsp;&nbsp;&nbsp; ( ) Não</div>
+                <div class="question-text">Se sim, quais?</div>
+                <div class="checkbox-group">( ) Salário &nbsp;&nbsp; ( ) VT &nbsp;&nbsp; ( ) Computador</div>
+                
+                <div class="question-text" style="margin-top:5px;">Descrição dos aspectos contratuais que a empresa não está cumprindo, e, caso necessário, dos encaminhamentos a serem adotados:</div>
+                <div class="large-input"></div>
+
+                <div class="question-text" style="margin-top:5px;">O(A) jovem está realizando horas extras (banco de horas) ou compensação de horas, situações vedadas pela legislação da aprendizagem?</div>
+                <div class="checkbox-group">( ) Sim &nbsp;&nbsp;&nbsp; ( ) Não</div>
+
+                <div class="section-title">3. Ambiente de trabalho</div>
+                <div class="question-text">Como você avalia o ambiente de trabalho da empresa (organização, segurança, clima organizacional)?</div>
+                <div class="large-input" style="height:40px;"></div>
+
+                <div class="section-title">4. Contato com o(a) supervisor(a) na empresa</div>
+                <div class="question-text">Avalie a qualidade do contato e interação com o(a) supervisor(a) responsável pela prática profissional na empresa:</div>
+                <div class="large-input" style="height:40px;"></div>
+
+                <div class="section-title">5. Sugestões</div>
+                <div class="question-text">Apresente sugestões para a melhoria da sua prática profissional e do Programa de Aprendizagem:</div>
+                <div class="large-input" style="height:40px;"></div>
+
+                <div class="section-title">OBSERVAÇÕES GERAIS</div>
+                <div class="question-text">Observações gerais do(a) responsável pela Prática Profissional no Senac:</div>
+                <div class="large-input-obs"></div>
+
+                <table class="signature-table">
+                    <tr>
+                        <td width="33%">
+                            <br><br><br>
+                            <div class="signature-line">${item.supervisor.empresa || "Supervisor(a) Empresa"}</div>
+                            <div>Supervisor(a) na Empresa</div>
+                        </td>
+                        <td width="33%">
+                            <br><br><br>
+                            <div class="signature-line">${item.supervisor.nome || "Supervisor(a) Senac"}</div>
+                            <div>Supervisor(a) Senac</div>
+                        </td>
+                        <td width="33%">
+                            <br><br><br>
+                            <div class="signature-line">${item.nome}</div>
+                            <div>Aprendiz</div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="3" style="text-align: left; padding-top: 15px; padding-left: 20px;">
+                            Data: ____/______/________
+                        </td>
+                    </tr>
+                </table>
                 `;
             });
 
-            content += "</body></html>";
+            content += "</div></body></html>";
 
             // Cria o Blob e faz o download
             const blob = new Blob(['\ufeff', content], {
@@ -1389,7 +1453,7 @@
             const url = URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.href = url;
-            link.download = `Formularios_Visita_${currentScope}_${new Date().toISOString().slice(0,10)}.doc`;
+            link.download = `Formularios_Visita_${currentScope}_${new Date().toLocaleDateString('pt-BR').replace(/\//g,'-')}.doc`;
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
