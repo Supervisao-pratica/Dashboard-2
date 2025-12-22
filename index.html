@@ -38,12 +38,18 @@
             box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
         }
 
+        /* Modal de Login */
+        #authModal {
+            display: flex;
+            backdrop-filter: blur(8px);
+            background-color: rgba(255, 255, 255, 0.9);
+        }
+
         /* Botões de Alternância de Escopo */
         .scope-btn {
             transition: all 0.2s ease;
             border-bottom: 3px solid transparent;
             opacity: 0.6;
-            cursor: pointer;
         }
         .scope-btn.active {
             opacity: 1;
@@ -65,37 +71,13 @@
         /* Loader */
         .loader { border: 3px solid rgba(255,255,255,0.3); border-radius: 50%; border-top: 3px solid #f68d2e; width: 20px; height: 20px; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-        /* Estilo para inputs financeiros */
-        .money-input {
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            padding: 8px 12px;
-            font-weight: 600;
-            color: #0f172a;
-            width: 100%;
-            transition: all 0.2s;
-        }
-        .money-input:focus {
-            border-color: var(--senac-blue);
-            outline: none;
-            background: white;
-            box-shadow: 0 0 0 3px rgba(0, 69, 135, 0.1);
-        }
     </style>
 </head>
 <body class="text-slate-800 h-screen flex flex-col overflow-hidden">
 
-    <!-- TELA DE LOGIN (Página Inteira) -->
-    <div id="loginPage" class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-100">
-        <!-- Background decorativo -->
-        <div class="absolute inset-0 overflow-hidden">
-            <div class="absolute -top-[20%] -left-[10%] w-[50%] h-[50%] rounded-full bg-senac-blue/5 blur-3xl"></div>
-            <div class="absolute top-[60%] -right-[10%] w-[40%] h-[60%] rounded-full bg-senac-orange/5 blur-3xl"></div>
-        </div>
-
-        <div class="bg-white rounded-2xl shadow-xl border border-slate-200 w-full max-w-md p-8 relative overflow-hidden z-10 mx-4">
+    <!-- MODAL DE ACESSO (Login) -->
+    <div id="authModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-md p-8 relative overflow-hidden">
             <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-senac-blue to-senac-orange"></div>
             
             <div class="text-center mb-8">
@@ -104,7 +86,7 @@
                 <p class="text-sm text-slate-500 mt-1">Validação de Segurança</p>
             </div>
 
-            <!-- Formulário de Login -->
+            <!-- Formulário de Login Seguro -->
             <div id="loginForm">
                 <div class="space-y-4 mb-6">
                     <div>
@@ -118,6 +100,7 @@
                         </div>
                     </div>
 
+                    <!-- Campo de E-mail (Para Regionais) -->
                     <div id="emailContainer" class="hidden animate-fade-in">
                         <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Seu E-mail Corporativo</label>
                         <div class="relative">
@@ -127,14 +110,51 @@
                         </div>
                     </div>
 
+                    <!-- Campo de Senha (Para Geral) -->
                     <div id="passwordContainer" class="animate-fade-in">
                         <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Senha de Acesso</label>
                         <div class="relative">
                             <input type="password" id="loginPassword" placeholder="Digite a senha de gestão" 
                                 class="w-full p-3 pl-10 pr-10 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 font-medium outline-none focus:border-senac-blue focus:ring-2 focus:ring-blue-50">
                             <i data-lucide="lock" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none"></i>
+                            
+                            <!-- Botão Visualizar Senha -->
+                            <button type="button" onclick="togglePasswordVisibility()" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-senac-blue focus:outline-none" title="Mostrar/Ocultar Senha">
+                                <i id="eyeIcon" data-lucide="eye" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                        <div class="text-right mt-2">
+                            <button onclick="triggerPasswordRecovery()" class="text-[10px] text-senac-orange font-bold hover:underline flex items-center gap-1 justify-end w-full">
+                                <i data-lucide="help-circle" class="w-3 h-3"></i> Solicitar senha
+                            </button>
                         </div>
                     </div>
+                    
+                    <!-- Painel de Recuperação -->
+                    <div id="recoveryMsg" class="hidden mt-4 p-4 bg-blue-50 border border-blue-100 rounded-xl animate-fade-in text-left">
+                        <div class="flex items-start gap-3">
+                            <div class="p-2 bg-white rounded-lg shadow-sm text-senac-blue">
+                                <i data-lucide="shield-alert" class="w-4 h-4"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="text-[11px] text-slate-700 font-bold mb-1">Acesso Restrito</p>
+                                <p class="text-[10px] text-slate-500 leading-relaxed mb-3">
+                                    Para obter a senha, é necessário enviar um e-mail formal para a Tutoria:
+                                </p>
+                                <div class="flex items-center gap-2 mb-3 bg-white p-2 rounded border border-slate-100">
+                                    <code class="text-[10px] font-mono text-slate-600 select-all" id="supportEmail">tutoria.aprendizagem@pr.senac.br</code>
+                                    <button onclick="copyEmail()" class="text-slate-400 hover:text-senac-blue transition-colors" title="Copiar">
+                                        <i data-lucide="copy" class="w-3 h-3"></i>
+                                    </button>
+                                </div>
+                                <button onclick="openMailClient()" class="w-full py-2 bg-senac-blue text-white rounded-lg text-[10px] font-bold hover:bg-blue-800 transition-colors flex items-center justify-center gap-2 shadow-md">
+                                    <i data-lucide="mail" class="w-3 h-3"></i>
+                                    Solicitar Senha por E-mail
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
                 
                 <button onclick="performLogin()" class="w-full py-3 bg-senac-blue hover:bg-blue-800 text-white font-bold rounded-xl transition-all shadow-lg shadow-blue-900/10 flex items-center justify-center gap-2">
@@ -142,388 +162,327 @@
                     <i data-lucide="arrow-right" class="w-4 h-4"></i>
                 </button>
 
-                 <div class="mt-6 flex justify-center items-center px-2">
+                <!-- Botões de Gerenciamento -->
+                <div class="mt-6 flex justify-center items-center px-2">
+                    <!-- Opção de Cadastro Local Removida -->
                     <button onclick="resetUsersToDefault()" class="text-[10px] text-slate-400 hover:text-red-500 hover:underline">
                         Restaurar Padrão
                     </button>
                 </div>
             </div>
-        </div>
-        
-        <div class="absolute bottom-4 text-slate-400 text-xs text-center w-full">
-            &copy; 2025 Senac PR - Gerência de Educação e Tecnologia
+
+            <!-- Formulário Novo Usuário (Mantido escondido caso precise reativar no futuro, mas sem botão de acesso) -->
+            <div id="addUserForm" class="hidden animate-fade-in">
+                <h3 class="text-sm font-bold text-slate-700 mb-4 flex items-center gap-2">
+                    <i data-lucide="user-plus" class="w-4 h-4 text-senac-orange"></i> Novo Cadastro Local
+                </h3>
+                
+                <div class="space-y-3">
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-400 uppercase">Nome</label>
+                        <input type="text" id="newUserName" placeholder="Ex: João Silva" class="w-full p-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-senac-blue">
+                    </div>
+                    
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-400 uppercase">E-mail</label>
+                        <input type="email" id="newUserEmail" placeholder="Ex: joao@senac.br" class="w-full p-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-senac-blue">
+                    </div>
+
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-400 uppercase">Região de Atuação</label>
+                        <div class="relative">
+                            <select id="newUserRegion" class="w-full p-2 border border-slate-200 rounded-lg text-sm bg-white outline-none focus:border-senac-blue appearance-none">
+                                <option value="">Acesso Geral (Todas as Regiões)</option>
+                                <!-- Regiões populadas via JS -->
+                            </select>
+                            <i data-lucide="chevron-down" class="absolute right-3 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-400 pointer-events-none"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex gap-2 mt-5">
+                    <button onclick="toggleAddUser(false)" class="flex-1 py-2 bg-slate-100 text-slate-600 font-bold rounded-lg text-xs hover:bg-slate-200 transition-colors">Cancelar</button>
+                    <button onclick="saveNewUser()" class="flex-1 py-2 bg-senac-orange text-white font-bold rounded-lg text-xs hover:bg-orange-600 transition-colors shadow-sm">Salvar</button>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- ÁREA PRINCIPAL DO SISTEMA (Inicialmente Oculta) -->
-    <div id="appContainer" class="hidden flex-col h-screen w-full">
-        
-        <!-- Header -->
-        <header class="bg-white border-b border-slate-200 flex-shrink-0 z-30 shadow-sm flex flex-col">
-            <!-- Top Bar -->
-            <div class="h-16 flex items-center justify-between px-8">
-                <div class="flex items-center gap-4">
-                    <div class="flex flex-col select-none justify-center">
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/8/86/Senac_logo.svg" alt="Senac" class="h-10">
-                    </div>
-                    <div class="h-8 w-px bg-slate-200 mx-2"></div>
-                    <div>
-                        <h1 class="font-bold text-sm text-slate-700">Painel de Supervisão</h1>
-                        <p class="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Gestão de Aprendizagem</p>
-                    </div>
+    <!-- Header -->
+    <header class="bg-white border-b border-slate-200 flex-shrink-0 z-30 shadow-sm flex flex-col">
+        <!-- Top Bar -->
+        <div class="h-16 flex items-center justify-between px-8">
+            <div class="flex items-center gap-4">
+                <div class="flex flex-col select-none justify-center">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/8/86/Senac_logo.svg" alt="Senac" class="h-10">
+                </div>
+                <div class="h-8 w-px bg-slate-200 mx-2"></div>
+                <div>
+                    <h1 class="font-bold text-sm text-slate-700">Painel de Supervisão</h1>
+                    <p class="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Gestão de Aprendizagem</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-6">
+                <!-- Info Usuário -->
+                <div class="text-right hidden md:block">
+                    <p class="text-sm font-bold text-senac-blue" id="displayUserName"></p>
+                    <p class="text-[10px] text-slate-400 font-mono" id="displayUserRegion"></p>
                 </div>
 
-                <div class="flex items-center gap-6">
-                    <!-- Info Usuário -->
-                    <div class="text-right hidden md:block">
-                        <p class="text-sm font-bold text-senac-blue" id="displayUserName"></p>
-                        <p class="text-[10px] text-slate-400 font-mono" id="displayUserRegion"></p>
-                    </div>
-
-                    <!-- Botão Upload -->
-                    <div class="flex items-center gap-2">
-                        <input type="file" id="fileInput" accept=".csv, .xlsx, .xlsm, .xls" class="hidden" onchange="processFile(this)">
-                        <button onclick="document.getElementById('fileInput').click()" class="group flex items-center gap-2 bg-slate-50 hover:bg-senac-blue hover:text-white text-slate-600 px-4 py-2 rounded-xl border border-slate-200 transition-all shadow-sm" title="Carregar Dados Gerais.xlsm">
-                            <i data-lucide="upload-cloud" class="w-4 h-4 text-senac-orange group-hover:text-white transition-colors"></i>
-                            <span id="btnUploadText" class="text-xs font-bold uppercase">Carregar Dados</span>
-                        </button>
-                        <div id="loadingSpinner" class="hidden"><div class="loader border-t-senac-blue"></div></div>
-                    </div>
-                    
-                    <button onclick="logout()" class="p-2 hover:bg-red-50 text-slate-400 hover:text-red-500 rounded-lg transition-colors" title="Sair / Trocar Usuário">
-                        <i data-lucide="log-out" class="w-5 h-5"></i>
+                <!-- Botão Upload (Manual e Auto) -->
+                <div class="flex items-center gap-2">
+                    <input type="file" id="fileInput" accept=".csv, .xlsx, .xlsm, .xls" class="hidden" onchange="processFile(this)">
+                    <button onclick="document.getElementById('fileInput').click()" class="group flex items-center gap-2 bg-slate-50 hover:bg-senac-blue hover:text-white text-slate-600 px-4 py-2 rounded-xl border border-slate-200 transition-all shadow-sm" title="Carregar Dados Gerais.xlsm">
+                        <i data-lucide="upload-cloud" class="w-4 h-4 text-senac-orange group-hover:text-white transition-colors"></i>
+                        <span id="btnUploadText" class="text-xs font-bold uppercase">Recarregar</span>
                     </button>
+                    <div id="loadingSpinner" class="hidden"><div class="loader border-t-senac-blue"></div></div>
                 </div>
-            </div>
-
-            <!-- Navegação (Tabs) -->
-            <div class="flex px-8 bg-white gap-8 border-t border-slate-50">
-                <button onclick="switchTab('qualificacao')" id="tabQualificacao" class="scope-btn active py-3 text-xs font-bold uppercase tracking-wide flex items-center gap-2">
-                    <i data-lucide="book-open" class="w-4 h-4"></i>
-                    Aprendizagem Qualificação
-                </button>
-                <button onclick="switchTab('tecnico')" id="tabTecnico" class="scope-btn py-3 text-xs font-bold uppercase tracking-wide flex items-center gap-2">
-                    <i data-lucide="wrench" class="w-4 h-4"></i>
-                    Aprendizagem Técnica
-                </button>
-                <button onclick="switchTab('financeiro')" id="tabFinanceiro" class="scope-btn py-3 text-xs font-bold uppercase tracking-wide flex items-center gap-2 text-emerald-600">
-                    <i data-lucide="dollar-sign" class="w-4 h-4"></i>
-                    Gestão Financeira
-                </button>
-            </div>
-        </header>
-
-        <!-- VIEWS -->
-        <div class="flex-1 overflow-hidden relative">
-            
-            <!-- VIEW 1: DASHBOARD OPERACIONAL (Qualificação/Técnico) -->
-            <div id="viewDashboard" class="flex h-full w-full">
-                <!-- Sidebar Filtros -->
-                <aside class="w-80 bg-white border-r border-slate-200 flex flex-col z-20 overflow-y-auto shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
-                    <div class="p-6 border-b border-slate-100 bg-slate-50/50">
-                        <h3 class="font-bold text-slate-700 flex items-center gap-2 mb-5">
-                            <div class="p-1.5 bg-white border border-slate-200 rounded-lg shadow-sm text-senac-orange">
-                                <i data-lucide="sliders-horizontal" class="w-4 h-4"></i>
-                            </div>
-                            Filtros Avançados
-                        </h3>
-                        
-                        <div class="relative group mb-5">
-                            <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-senac-blue transition-colors"></i>
-                            <input type="text" id="filterSearch" onkeyup="applyFilters()" placeholder="Buscar Jovem ou Turma..." 
-                                class="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:border-senac-blue focus:ring-4 focus:ring-blue-50 outline-none transition-all shadow-sm">
-                        </div>
-
-                        <div class="mb-6">
-                            <label class="text-[11px] font-bold text-slate-400 uppercase tracking-wide ml-1 mb-1 block">Situação do Contrato</label>
-                            <div class="relative">
-                                <select id="filterContractStatus" onchange="applyFilters()" class="w-full appearance-none p-3 bg-white border border-slate-200 rounded-xl text-sm outline-none focus:border-senac-blue focus:ring-2 focus:ring-blue-50 transition-all cursor-pointer text-slate-700 font-medium">
-                                    <option value="active">Apenas Ativos (Padrão)</option>
-                                    <option value="closed" class="text-red-600 font-bold">Apenas Encerrados</option>
-                                    <option value="all">Todos (Ativos + Encerrados)</option>
-                                </select>
-                                <i data-lucide="chevron-down" class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none"></i>
-                            </div>
-                        </div>
-
-                        <div class="space-y-4">
-                            <div>
-                                <label class="text-[11px] font-bold text-slate-400 uppercase tracking-wide ml-1 mb-1 block">Região</label>
-                                <div class="relative">
-                                    <select id="filterRegiao" onchange="handleRegionChange()" class="w-full appearance-none p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:border-senac-blue focus:bg-white transition-all cursor-pointer text-slate-700 disabled:opacity-50 disabled:bg-slate-100">
-                                        <option value="">Todas as Regiões</option>
-                                    </select>
-                                    <i data-lucide="chevron-down" class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none"></i>
-                                </div>
-                                <p id="regionLockMsg" class="hidden text-[10px] text-senac-orange mt-1 font-bold flex items-center gap-1"><i data-lucide="lock" class="w-3 h-3"></i> Filtro bloqueado pelo perfil</p>
-                            </div>
-                            <div>
-                                <label class="text-[11px] font-bold text-slate-400 uppercase tracking-wide ml-1 mb-1 block">Cidade</label>
-                                <div class="relative">
-                                    <select id="filterCidade" onchange="applyFilters()" class="w-full appearance-none p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:border-senac-blue focus:bg-white transition-all cursor-pointer text-slate-700">
-                                        <option value="">Todas as Cidades</option>
-                                    </select>
-                                    <i data-lucide="chevron-down" class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="p-6 mt-auto bg-slate-50 border-t border-slate-200">
-                        <p class="text-[10px] font-bold text-slate-400 uppercase mb-3">Legenda de Situação</p>
-                        <div class="space-y-2.5">
-                            <div class="flex items-center gap-2.5">
-                                <div class="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]"></div>
-                                <span class="text-xs text-slate-600 font-medium">No Prazo / Realizada</span>
-                            </div>
-                            <div class="flex items-center gap-2.5">
-                                <div class="w-2.5 h-2.5 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.4)]"></div>
-                                <span id="legendDelayedText" class="text-xs text-slate-600 font-medium">Atrasado (> 90 dias)</span>
-                            </div>
-                            <div class="flex items-center gap-2.5">
-                                <div class="w-2.5 h-2.5 rounded-full bg-slate-400"></div>
-                                <span class="text-xs text-slate-400">Encerrado</span>
-                            </div>
-                        </div>
-                    </div>
-                </aside>
-
-                <!-- Conteúdo Principal Dashboard -->
-                <main class="flex-1 flex flex-col overflow-hidden bg-slate-50/50 relative">
-                    <!-- KPIs -->
-                    <div class="p-6 pb-2 grid grid-cols-12 gap-6 h-auto flex-shrink-0">
-                        <div class="col-span-12 lg:col-span-3 grid grid-cols-1 gap-4">
-                            <div onclick="filterByStatus('all')" class="card-bi p-5 cursor-pointer relative overflow-hidden group border-l-4 border-l-senac-blue">
-                                <div class="flex justify-between items-start z-10 relative">
-                                    <div>
-                                        <p class="text-[11px] text-slate-400 font-bold uppercase tracking-wider mb-1">Total Visualizado</p>
-                                        <h2 class="text-3xl font-extrabold text-slate-800 group-hover:text-senac-blue transition-colors" id="kpiTotal">0</h2>
-                                    </div>
-                                    <div class="p-2.5 bg-blue-50 text-senac-blue rounded-xl group-hover:scale-110 transition-transform">
-                                        <i data-lucide="users" class="w-5 h-5"></i>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div onclick="filterByStatus('atrasado')" class="card-bi p-5 cursor-pointer relative overflow-hidden group border-l-4 border-l-red-500">
-                                <div class="flex justify-between items-start z-10 relative">
-                                    <div>
-                                        <p class="text-[11px] text-red-400 font-bold uppercase tracking-wider mb-1">Visitas Atrasadas</p>
-                                        <h2 class="text-3xl font-extrabold text-red-600" id="kpiAtrasados">0</h2>
-                                        <p id="kpiDelayedText" class="text-[10px] text-red-400 mt-1 font-medium">Fora do prazo de 90 dias</p>
-                                    </div>
-                                    <div class="p-2.5 bg-red-50 text-red-500 rounded-xl group-hover:scale-110 transition-transform">
-                                        <i data-lucide="alert-triangle" class="w-5 h-5"></i>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div onclick="filterByStatus('noprazo')" class="card-bi p-5 cursor-pointer relative overflow-hidden group border-l-4 border-l-emerald-500">
-                                <div class="flex justify-between items-start z-10 relative">
-                                    <div>
-                                        <p class="text-[11px] text-emerald-500 font-bold uppercase tracking-wider mb-1">Em Dia</p>
-                                        <h2 class="text-3xl font-extrabold text-emerald-600" id="kpiNoPrazo">0</h2>
-                                    </div>
-                                    <div class="p-2.5 bg-emerald-50 text-emerald-500 rounded-xl group-hover:scale-110 transition-transform">
-                                        <i data-lucide="check-circle-2" class="w-5 h-5"></i>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Gráficos -->
-                        <div class="col-span-12 md:col-span-4 lg:col-span-4 card-bi p-5 flex flex-col">
-                            <h3 class="text-xs font-bold text-slate-600 uppercase mb-4 flex items-center gap-2">
-                                <i data-lucide="pie-chart" class="w-4 h-4 text-senac-orange"></i> Status Geral
-                            </h3>
-                            <div class="flex-1 min-h-0 relative flex items-center justify-center">
-                                <canvas id="chartStatus"></canvas>
-                            </div>
-                        </div>
-
-                        <div class="col-span-12 md:col-span-5 lg:col-span-5 card-bi p-5 flex flex-col">
-                            <h3 class="text-xs font-bold text-slate-600 uppercase mb-4 flex items-center gap-2">
-                                <i data-lucide="bar-chart-2" class="w-4 h-4 text-senac-blue"></i> Top Cidades/Regiões
-                            </h3>
-                            <div class="flex-1 min-h-0 relative">
-                                <canvas id="chartRegiao"></canvas>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Tabela -->
-                    <div class="flex-1 px-6 pb-6 overflow-hidden flex flex-col">
-                        <div class="card-bi flex-1 flex flex-col overflow-hidden bg-white">
-                            <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-white rounded-t-2xl">
-                                <div class="flex items-center gap-3">
-                                    <div class="p-2 bg-slate-100 rounded-lg text-slate-600">
-                                        <i data-lucide="list" class="w-4 h-4"></i>
-                                    </div>
-                                    <div>
-                                        <h3 class="font-bold text-slate-700 text-sm">Detalhamento dos Contratos</h3>
-                                        <p class="text-xs text-slate-400 mt-0.5">Mostrando <strong id="countFiltered" class="text-senac-blue">0</strong> registros</p>
-                                    </div>
-                                </div>
-                                
-                                <div class="flex gap-2">
-                                    <button onclick="exportFilteredReport()" class="flex items-center gap-2 px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-xs font-bold transition-all shadow-md shadow-emerald-200">
-                                        <i data-lucide="download" class="w-4 h-4"></i> Baixar Relatório
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div class="flex-1 overflow-auto custom-scrollbar">
-                                <table class="w-full text-left border-collapse">
-                                    <thead class="bg-slate-50 sticky top-0 z-10 text-[11px] uppercase text-slate-500 font-bold tracking-wide shadow-sm">
-                                        <tr>
-                                            <th class="p-4 w-[25%]">Jovem / Turma</th>
-                                            <th class="p-4 w-[20%]">Empresa / Cidade</th>
-                                            <th class="p-4 w-[20%]">Supervisor</th>
-                                            <th class="p-4 w-[10%] text-center">Início/Fim</th>
-                                            <th class="p-4 w-[15%] text-center">Situação Visitas</th>
-                                            <th class="p-4 w-[10%] text-center">Status</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="tableBody" class="divide-y divide-slate-100 text-sm">
-                                        <tr>
-                                            <td colspan="6" class="p-12 text-center text-slate-400">
-                                                <div class="flex flex-col items-center gap-3">
-                                                    <div class="w-16 h-16 bg-blue-50 text-senac-blue rounded-full flex items-center justify-center mb-2">
-                                                        <i data-lucide="folder-open" class="w-8 h-8"></i>
-                                                    </div>
-                                                    <p class="text-sm font-bold text-slate-600">Aguardando dados...</p>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                            
-                            <div class="p-3 border-t border-slate-100 flex justify-between items-center bg-slate-50 rounded-b-2xl px-6">
-                                <span class="text-xs text-slate-500">Página <span id="pageDisplay" class="font-bold text-slate-700">1</span></span>
-                                <div class="flex gap-2">
-                                    <button onclick="changePage(-1)" class="px-3 py-1.5 border border-slate-200 rounded-lg hover:bg-white text-xs font-bold text-slate-600 disabled:opacity-50 transition-all shadow-sm" id="btnPrev">Anterior</button>
-                                    <button onclick="changePage(1)" class="px-3 py-1.5 border border-slate-200 rounded-lg hover:bg-white text-xs font-bold text-slate-600 disabled:opacity-50 transition-all shadow-sm" id="btnNext">Próxima</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </main>
-            </div>
-
-            <!-- VIEW 2: DASHBOARD FINANCEIRO (NOVO) -->
-            <div id="viewFinanceiro" class="hidden h-full w-full bg-slate-50/50 flex-col overflow-auto p-8">
                 
-                <div class="max-w-7xl mx-auto w-full">
-                    <div class="flex items-center justify-between mb-8">
-                        <div>
-                            <h2 class="text-2xl font-bold text-slate-800">Gestão Orçamentária de Visitas</h2>
-                            <p class="text-sm text-slate-500">Comparativo de orçamento disponível versus estimativa de custos para visitas pendentes.</p>
-                        </div>
-                        <div class="bg-white p-2 rounded-xl shadow-sm border border-slate-200 flex items-center gap-2">
-                            <span class="text-xs font-bold uppercase text-slate-400 px-2">Escopo Total:</span>
-                            <span class="text-sm font-bold text-senac-blue">Qualificação + Técnico</span>
-                        </div>
-                    </div>
-
-                    <!-- Painel de Inputs e KPIs -->
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                        
-                        <!-- Input: Orçamento -->
-                        <div class="card-bi p-5 border-l-4 border-l-emerald-500">
-                            <label class="block text-xs font-bold text-slate-400 uppercase mb-2">Orçamento Disponível (R$)</label>
-                            <input type="number" id="inputBudget" value="5000" class="money-input text-xl" oninput="updateFinancials()">
-                            <p class="text-[10px] text-slate-400 mt-2">Valor total em caixa para o período.</p>
-                        </div>
-
-                        <!-- Input: Custo Médio -->
-                        <div class="card-bi p-5 border-l-4 border-l-blue-500">
-                            <label class="block text-xs font-bold text-slate-400 uppercase mb-2">Custo Estimado por Visita (R$)</label>
-                            <input type="number" id="inputCost" value="85.50" class="money-input text-xl" oninput="updateFinancials()">
-                            <p class="text-[10px] text-slate-400 mt-2">Média (Km + Diária/Refeição).</p>
-                        </div>
-
-                        <!-- KPI: Visitas Pendentes -->
-                        <div class="card-bi p-5 flex flex-col justify-center">
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <p class="text-[10px] text-slate-400 font-bold uppercase mb-1">Visitas Pendentes (Total)</p>
-                                    <h3 class="text-3xl font-extrabold text-slate-700" id="finPendingVisits">0</h3>
-                                </div>
-                                <div class="p-3 bg-slate-100 rounded-full text-slate-500">
-                                    <i data-lucide="calendar-clock" class="w-6 h-6"></i>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- KPI: Custo Total Estimado -->
-                        <div class="card-bi p-5 flex flex-col justify-center bg-slate-800 text-white border-none">
-                            <div>
-                                <p class="text-[10px] text-slate-400 font-bold uppercase mb-1">Custo Total Projetado</p>
-                                <h3 class="text-3xl font-extrabold text-white" id="finProjectedCost">R$ 0,00</h3>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Gráfico e Saldo -->
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-                        <!-- Card de Saldo -->
-                        <div class="col-span-1 card-bi p-6 flex flex-col items-center justify-center text-center">
-                            <p class="text-xs font-bold text-slate-400 uppercase mb-2">Saldo Projetado (Orçamento - Gastos)</p>
-                            <h2 class="text-4xl font-extrabold mb-2" id="finBalance">R$ 0,00</h2>
-                            <div id="finStatusBadge" class="px-4 py-1 rounded-full text-xs font-bold uppercase bg-slate-100 text-slate-500">
-                                Aguardando Cálculo
-                            </div>
-                            <p class="text-xs text-slate-400 mt-4 max-w-[200px]">
-                                Se negativo, o orçamento não cobrirá todas as visitas pendentes.
-                            </p>
-                        </div>
-
-                        <!-- Gráfico Comparativo -->
-                        <div class="col-span-2 card-bi p-5">
-                            <h3 class="text-xs font-bold text-slate-600 uppercase mb-4">Comparativo Financeiro</h3>
-                            <div class="h-64 w-full relative">
-                                <canvas id="chartFinance"></canvas>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Tabela de Detalhamento por Região -->
-                    <div class="card-bi overflow-hidden">
-                        <div class="px-6 py-4 border-b border-slate-100 bg-slate-50/50">
-                            <h3 class="font-bold text-slate-700 text-sm">Estimativa de Gastos por Região</h3>
-                        </div>
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-left text-sm">
-                                <thead class="bg-white text-xs uppercase text-slate-500 font-bold border-b border-slate-100">
-                                    <tr>
-                                        <th class="p-4">Região / Cidade</th>
-                                        <th class="p-4 text-center">Visitas Pendentes</th>
-                                        <th class="p-4 text-right">Custo Estimado</th>
-                                        <th class="p-4 text-center">% do Orçamento</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="finTableBody" class="divide-y divide-slate-100">
-                                    <!-- Preenchido via JS -->
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                </div>
+                <button onclick="logout()" class="p-2 hover:bg-red-50 text-slate-400 hover:text-red-500 rounded-lg transition-colors" title="Sair / Trocar Usuário">
+                    <i data-lucide="log-out" class="w-5 h-5"></i>
+                </button>
             </div>
         </div>
+
+        <!-- Navegação de Curso (Tabs) -->
+        <div class="flex px-8 bg-white gap-8 border-t border-slate-50">
+            <button onclick="switchScope('qualificacao')" id="btnScopeQualificacao" class="scope-btn active py-3 text-xs font-bold uppercase tracking-wide flex items-center gap-2">
+                <i data-lucide="book-open" class="w-4 h-4"></i>
+                Aprendizagem Qualificação
+            </button>
+            <button onclick="switchScope('tecnico')" id="btnScopeTecnico" class="scope-btn py-3 text-xs font-bold uppercase tracking-wide flex items-center gap-2">
+                <i data-lucide="wrench" class="w-4 h-4"></i>
+                Aprendizagem Técnica
+            </button>
+        </div>
+    </header>
+
+    <div class="flex-1 flex overflow-hidden">
+        
+        <!-- Sidebar Filtros -->
+        <aside class="w-80 bg-white border-r border-slate-200 flex flex-col z-20 overflow-y-auto shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
+            <div class="p-6 border-b border-slate-100 bg-slate-50/50">
+                <h3 class="font-bold text-slate-700 flex items-center gap-2 mb-5">
+                    <div class="p-1.5 bg-white border border-slate-200 rounded-lg shadow-sm text-senac-orange">
+                        <i data-lucide="sliders-horizontal" class="w-4 h-4"></i>
+                    </div>
+                    Filtros Avançados
+                </h3>
+                
+                <!-- Busca -->
+                <div class="relative group mb-5">
+                    <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-senac-blue transition-colors"></i>
+                    <input type="text" id="filterSearch" onkeyup="applyFilters()" placeholder="Buscar Jovem ou Turma..." 
+                           class="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:border-senac-blue focus:ring-4 focus:ring-blue-50 outline-none transition-all shadow-sm">
+                </div>
+
+                <!-- Filtro Situação do Contrato -->
+                <div class="mb-6">
+                    <label class="text-[11px] font-bold text-slate-400 uppercase tracking-wide ml-1 mb-1 block">Situação do Contrato</label>
+                    <div class="relative">
+                        <select id="filterContractStatus" onchange="applyFilters()" class="w-full appearance-none p-3 bg-white border border-slate-200 rounded-xl text-sm outline-none focus:border-senac-blue focus:ring-2 focus:ring-blue-50 transition-all cursor-pointer text-slate-700 font-medium">
+                            <option value="active">Apenas Ativos (Padrão)</option>
+                            <option value="closed" class="text-red-600 font-bold">Apenas Encerrados</option>
+                            <option value="all">Todos (Ativos + Encerrados)</option>
+                        </select>
+                        <i data-lucide="chevron-down" class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none"></i>
+                    </div>
+                </div>
+
+                <!-- Dropdowns Dependentes -->
+                <div class="space-y-4">
+                    <div>
+                        <label class="text-[11px] font-bold text-slate-400 uppercase tracking-wide ml-1 mb-1 block">Região</label>
+                        <div class="relative">
+                            <select id="filterRegiao" onchange="handleRegionChange()" class="w-full appearance-none p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:border-senac-blue focus:bg-white transition-all cursor-pointer text-slate-700 disabled:opacity-50 disabled:bg-slate-100">
+                                <option value="">Todas as Regiões</option>
+                            </select>
+                            <i data-lucide="chevron-down" class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none"></i>
+                        </div>
+                        <p id="regionLockMsg" class="hidden text-[10px] text-senac-orange mt-1 font-bold flex items-center gap-1"><i data-lucide="lock" class="w-3 h-3"></i> Filtro bloqueado pelo perfil</p>
+                    </div>
+                    <div>
+                        <label class="text-[11px] font-bold text-slate-400 uppercase tracking-wide ml-1 mb-1 block">Cidade</label>
+                        <div class="relative">
+                            <select id="filterCidade" onchange="applyFilters()" class="w-full appearance-none p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:border-senac-blue focus:bg-white transition-all cursor-pointer text-slate-700">
+                                <option value="">Todas as Cidades</option>
+                            </select>
+                            <i data-lucide="chevron-down" class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Legenda -->
+            <div class="p-6 mt-auto bg-slate-50 border-t border-slate-200">
+                <p class="text-[10px] font-bold text-slate-400 uppercase mb-3">Legenda de Situação</p>
+                <div class="space-y-2.5">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]"></div>
+                        <span class="text-xs text-slate-600 font-medium">No Prazo / Realizada</span>
+                    </div>
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-2.5 h-2.5 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.4)]"></div>
+                        <!-- ID ADICIONADO PARA ATUALIZAÇÃO VIA JS -->
+                        <span id="legendDelayedText" class="text-xs text-slate-600 font-medium">Atrasado (> 90 dias)</span>
+                    </div>
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-2.5 h-2.5 rounded-full bg-slate-400"></div>
+                        <span class="text-xs text-slate-400">Encerrado</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Conteúdo Principal -->
+        <main class="flex-1 flex flex-col overflow-hidden bg-slate-50/50 relative">
+            
+            <!-- Dashboard BI -->
+            <div class="p-6 pb-2 grid grid-cols-12 gap-6 h-auto flex-shrink-0">
+                
+                <!-- KPIs -->
+                <div class="col-span-12 lg:col-span-3 grid grid-cols-1 gap-4">
+                    <div onclick="filterByStatus('all')" class="card-bi p-5 cursor-pointer relative overflow-hidden group border-l-4 border-l-senac-blue">
+                        <div class="flex justify-between items-start z-10 relative">
+                            <div>
+                                <p class="text-[11px] text-slate-400 font-bold uppercase tracking-wider mb-1">Total Visualizado</p>
+                                <h2 class="text-3xl font-extrabold text-slate-800 group-hover:text-senac-blue transition-colors" id="kpiTotal">0</h2>
+                            </div>
+                            <div class="p-2.5 bg-blue-50 text-senac-blue rounded-xl group-hover:scale-110 transition-transform">
+                                <i data-lucide="users" class="w-5 h-5"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div onclick="filterByStatus('atrasado')" class="card-bi p-5 cursor-pointer relative overflow-hidden group border-l-4 border-l-red-500">
+                        <div class="flex justify-between items-start z-10 relative">
+                            <div>
+                                <p class="text-[11px] text-red-400 font-bold uppercase tracking-wider mb-1">Visitas Atrasadas</p>
+                                <h2 class="text-3xl font-extrabold text-red-600" id="kpiAtrasados">0</h2>
+                                <!-- ID ADICIONADO PARA ATUALIZAÇÃO VIA JS -->
+                                <p id="kpiDelayedText" class="text-[10px] text-red-400 mt-1 font-medium">Fora do prazo de 90 dias</p>
+                            </div>
+                            <div class="p-2.5 bg-red-50 text-red-500 rounded-xl group-hover:scale-110 transition-transform">
+                                <i data-lucide="alert-triangle" class="w-5 h-5"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div onclick="filterByStatus('noprazo')" class="card-bi p-5 cursor-pointer relative overflow-hidden group border-l-4 border-l-emerald-500">
+                        <div class="flex justify-between items-start z-10 relative">
+                            <div>
+                                <p class="text-[11px] text-emerald-500 font-bold uppercase tracking-wider mb-1">Em Dia</p>
+                                <h2 class="text-3xl font-extrabold text-emerald-600" id="kpiNoPrazo">0</h2>
+                            </div>
+                            <div class="p-2.5 bg-emerald-50 text-emerald-500 rounded-xl group-hover:scale-110 transition-transform">
+                                <i data-lucide="check-circle-2" class="w-5 h-5"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Gráficos -->
+                <div class="col-span-12 md:col-span-4 lg:col-span-4 card-bi p-5 flex flex-col">
+                    <h3 class="text-xs font-bold text-slate-600 uppercase mb-4 flex items-center gap-2">
+                        <i data-lucide="pie-chart" class="w-4 h-4 text-senac-orange"></i> Status Geral
+                    </h3>
+                    <div class="flex-1 min-h-0 relative flex items-center justify-center">
+                        <canvas id="chartStatus"></canvas>
+                    </div>
+                </div>
+
+                <div class="col-span-12 md:col-span-5 lg:col-span-5 card-bi p-5 flex flex-col">
+                    <h3 class="text-xs font-bold text-slate-600 uppercase mb-4 flex items-center gap-2">
+                        <i data-lucide="bar-chart-2" class="w-4 h-4 text-senac-blue"></i> Top Cidades/Regiões
+                    </h3>
+                    <div class="flex-1 min-h-0 relative">
+                        <canvas id="chartRegiao"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabela -->
+            <div class="flex-1 px-6 pb-6 overflow-hidden flex flex-col">
+                <div class="card-bi flex-1 flex flex-col overflow-hidden bg-white">
+                    <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-white rounded-t-2xl">
+                        <div class="flex items-center gap-3">
+                            <div class="p-2 bg-slate-100 rounded-lg text-slate-600">
+                                <i data-lucide="list" class="w-4 h-4"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-slate-700 text-sm">Detalhamento dos Contratos</h3>
+                                <p class="text-xs text-slate-400 mt-0.5">Mostrando <strong id="countFiltered" class="text-senac-blue">0</strong> registros</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex gap-2">
+                            <!-- Novo Botão de Formulários com ID para atualização dinâmica -->
+                            <button id="btnGenerateWord" onclick="generateWordForms()" class="flex items-center gap-2 px-4 py-2 bg-senac-blue hover:bg-blue-800 text-white rounded-lg text-xs font-bold transition-all shadow-md shadow-blue-200">
+                                <i data-lucide="file-text" class="w-4 h-4"></i> Gerar Formulários (0)
+                            </button>
+
+                            <button onclick="exportFilteredReport()" class="flex items-center gap-2 px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-xs font-bold transition-all shadow-md shadow-emerald-200">
+                                <i data-lucide="download" class="w-4 h-4"></i> Baixar Relatório
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="flex-1 overflow-auto custom-scrollbar">
+                        <table class="w-full text-left border-collapse">
+                            <thead class="bg-slate-50 sticky top-0 z-10 text-[11px] uppercase text-slate-500 font-bold tracking-wide shadow-sm">
+                                <tr>
+                                    <th class="p-4 w-[25%]">Jovem / Turma</th>
+                                    <th class="p-4 w-[20%]">Empresa / Cidade</th>
+                                    <th class="p-4 w-[20%]">Supervisor</th>
+                                    <th class="p-4 w-[10%] text-center">Início/Fim</th>
+                                    <th class="p-4 w-[15%] text-center">Situação Visitas</th>
+                                    <th class="p-4 w-[10%] text-center">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tableBody" class="divide-y divide-slate-100 text-sm">
+                                <tr>
+                                    <td colspan="6" class="p-12 text-center text-slate-400">
+                                        <div class="flex flex-col items-center gap-3">
+                                            <div class="w-16 h-16 bg-blue-50 text-senac-blue rounded-full flex items-center justify-center mb-2">
+                                                <i data-lucide="folder-open" class="w-8 h-8"></i>
+                                            </div>
+                                            <p class="text-sm font-bold text-slate-600">Bem-vindo ao Painel de Supervisão</p>
+                                            <p class="text-xs text-slate-400 max-w-xs text-center">
+                                                Para começar, certifique-se de que o arquivo <strong>Dados Gerais.xlsm</strong> está carregado ou utilize o botão "Recarregar" acima.
+                                            </p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="p-3 border-t border-slate-100 flex justify-between items-center bg-slate-50 rounded-b-2xl px-6">
+                        <span class="text-xs text-slate-500">Página <span id="pageDisplay" class="font-bold text-slate-700">1</span></span>
+                        <div class="flex gap-2">
+                            <button onclick="changePage(-1)" class="px-3 py-1.5 border border-slate-200 rounded-lg hover:bg-white text-xs font-bold text-slate-600 disabled:opacity-50 transition-all shadow-sm" id="btnPrev">Anterior</button>
+                            <button onclick="changePage(1)" class="px-3 py-1.5 border border-slate-200 rounded-lg hover:bg-white text-xs font-bold text-slate-600 disabled:opacity-50 transition-all shadow-sm" id="btnNext">Próxima</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
     </div>
 
     <!-- SCRIPT CENTRAL -->
     <script>
         // --- 0. VARIÁVEIS GLOBAIS ---
-        let db = { qualificacao: [], tecnico: [] };
-        let currentScope = 'qualificacao';
         
-        // Configuração Financeira
-        let financialChart = null;
+        let db = {
+            qualificacao: [],
+            tecnico: []
+        };
+        
+        let currentScope = 'qualificacao';
 
+        // LISTA DE REGIÕES CONHECIDAS
         const PREDEFINED_REGIONS = [
             "APUCARANA", "CAMPO MOURÃO", "CASCAVEL", "CASTRO", "CORNÉLIO PROCÓPIO", "CURITIBA", 
             "FOZ DO IGUAÇU", "FRANCISCO BELTRÃO", "GUARAPUAVA", "IRATI", "IVAIPORÃ", 
@@ -532,12 +491,18 @@
             "SANTO ANTÔNIO DA PLATINA", "TOLEDO", "UMUARAMA", "UNIÃO DA VITÓRIA"
         ];
 
+        // Usuários Padrão
         const DEFAULT_USERS = [
-            { name: 'Gestor Geral', region: '', email: 'gestor@senac.br' }
+            { name: 'Gestor Geral', region: '', email: 'gestor@senac.br' },
+            { name: 'Luciano', region: 'CAMPO MOURÃO', email: 'luciano.ramos@docente.pr.senac.br' },
+            { name: 'Samoel', region: 'FRANCISCO BELTRÃO', email: 'samoel.pitz@docente.pr.senac.br' },
+            { name: 'Michelly', region: 'GUARAPUAVA', email: 'michelly.gronkoski@docente.pr.senac.br' }
         ];
 
         let currentUser = null;
         let users = [];
+
+        // Filtros e Paginação
         let filteredData = [];
         let currentPage = 1;
         const itemsPerPage = 50;
@@ -545,191 +510,29 @@
         let chartRegiaoInstance = null;
         let currentStatusFilter = 'all';
 
-        // --- 1. LÓGICA DE ABAS (ESCOPO E FINANCEIRO) ---
+        // --- 1. FUNÇÕES DE ESCOPO (Alternância de Abas) ---
 
-        function switchTab(tabName) {
-            const viewDash = document.getElementById('viewDashboard');
-            const viewFin = document.getElementById('viewFinanceiro');
+        function switchScope(scope) {
+            currentScope = scope;
             
-            // Resetar botões
-            document.getElementById('tabQualificacao').classList.remove('active');
-            document.getElementById('tabTecnico').classList.remove('active');
-            document.getElementById('tabFinanceiro').classList.remove('active');
+            document.getElementById('btnScopeQualificacao').classList.toggle('active', scope === 'qualificacao');
+            document.getElementById('btnScopeTecnico').classList.toggle('active', scope === 'tecnico');
 
-            if (tabName === 'financeiro') {
-                document.getElementById('tabFinanceiro').classList.add('active');
-                viewDash.classList.add('hidden');
-                viewFin.classList.remove('hidden');
-                viewFin.classList.add('flex');
-                
-                // Trigger finance update
-                setTimeout(updateFinancials, 100);
-            } else {
-                currentScope = tabName;
-                if(tabName === 'qualificacao') document.getElementById('tabQualificacao').classList.add('active');
-                if(tabName === 'tecnico') document.getElementById('tabTecnico').classList.add('active');
-                
-                viewDash.classList.remove('hidden');
-                viewFin.classList.add('hidden');
-                viewFin.classList.remove('flex');
-
-                const daysLabel = currentScope === 'tecnico' ? "120" : "90";
-                const legendEl = document.getElementById('legendDelayedText');
-                const kpiEl = document.getElementById('kpiDelayedText');
-                if(legendEl) legendEl.innerText = `Atrasado (> ${daysLabel} dias)`;
-                if(kpiEl) kpiEl.innerText = `Fora do prazo de ${daysLabel} dias`;
-
-                currentPage = 1;
-                populateFilters(); 
-                applyFilters();
-            }
-        }
-
-        // --- 2. GESTÃO FINANCEIRA ---
-
-        function updateFinancials() {
-            // 1. Coletar Inputs
-            const budget = parseFloat(document.getElementById('inputBudget').value) || 0;
-            const costPerVisit = parseFloat(document.getElementById('inputCost').value) || 0;
-
-            // 2. Calcular Visitas Pendentes (Global: Quali + Tec)
-            // Visita pendente = Status não contém "realizada"
-            let totalPending = 0;
-            let regionStats = {};
-
-            const processList = (list) => {
-                list.forEach(item => {
-                    // Verifica se o contrato está ativo (opcional, mas recomendado)
-                    const isEncerrado = item.fim && parseDate(item.fim) < new Date();
-                    if (isEncerrado) return;
-
-                    let pendingForStudent = 0;
-                    item.visits.forEach(v => {
-                        const status = (v.status || "").toLowerCase();
-                        if (!status.includes("realizada") && !status.includes("concluída")) {
-                            pendingForStudent++;
-                        }
-                    });
-
-                    if (pendingForStudent > 0) {
-                        totalPending += pendingForStudent;
-                        
-                        // Agrupar por Região (ou Cidade se Região for vazia)
-                        const key = item.regiao || item.cidade || "Indefinido";
-                        if (!regionStats[key]) regionStats[key] = 0;
-                        regionStats[key] += pendingForStudent;
-                    }
-                });
-            };
-
-            processList(db.qualificacao || []);
-            processList(db.tecnico || []);
-
-            // 3. Cálculos
-            const projectedCost = totalPending * costPerVisit;
-            const balance = budget - projectedCost;
-
-            // 4. Atualizar UI
-            document.getElementById('finPendingVisits').innerText = totalPending;
-            document.getElementById('finProjectedCost').innerText = formatCurrency(projectedCost);
+            // --- Lógica de Atualização Visual dos Prazos ---
+            // Qualificação: 90 dias / Técnica: 120 dias
+            const daysLabel = scope === 'tecnico' ? "120" : "90";
+            const legendEl = document.getElementById('legendDelayedText');
+            const kpiEl = document.getElementById('kpiDelayedText');
             
-            const elBalance = document.getElementById('finBalance');
-            elBalance.innerText = formatCurrency(balance);
-            elBalance.className = `text-4xl font-extrabold mb-2 ${balance >= 0 ? 'text-emerald-600' : 'text-red-600'}`;
+            if(legendEl) legendEl.innerText = `Atrasado (> ${daysLabel} dias)`;
+            if(kpiEl) kpiEl.innerText = `Fora do prazo de ${daysLabel} dias`;
 
-            const elBadge = document.getElementById('finStatusBadge');
-            if (balance >= 0) {
-                elBadge.innerText = "Orçamento Suficiente";
-                elBadge.className = "px-4 py-1 rounded-full text-xs font-bold uppercase bg-emerald-100 text-emerald-700";
-            } else {
-                elBadge.innerText = "Déficit Orçamentário";
-                elBadge.className = "px-4 py-1 rounded-full text-xs font-bold uppercase bg-red-100 text-red-700";
-            }
-
-            // 5. Atualizar Gráfico
-            updateFinancialChart(budget, projectedCost);
-
-            // 6. Atualizar Tabela Regional
-            updateFinancialTable(regionStats, costPerVisit, budget);
+            currentPage = 1;
+            populateFilters(); 
+            applyFilters();
         }
 
-        function formatCurrency(val) {
-            return val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-        }
-
-        function updateFinancialChart(budget, expenses) {
-            const ctx = document.getElementById('chartFinance');
-            if (!ctx) return;
-
-            if (financialChart) financialChart.destroy();
-
-            financialChart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: ['Orçamento Disponível', 'Gastos Projetados'],
-                    datasets: [{
-                        label: 'Valor (R$)',
-                        data: [budget, expenses],
-                        backgroundColor: [
-                            '#10b981', // Emerald
-                            expenses > budget ? '#ef4444' : '#3b82f6' // Red se estourar, Blue se ok
-                        ],
-                        borderRadius: 6,
-                        barThickness: 60
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        y: { beginAtZero: true, grid: { color: '#f1f5f9' } },
-                        x: { grid: { display: false } }
-                    }
-                }
-            });
-        }
-
-        function updateFinancialTable(stats, costPerVisit, totalBudget) {
-            const tbody = document.getElementById('finTableBody');
-            tbody.innerHTML = '';
-
-            // Converter objeto em array e ordenar por custo decrescente
-            const rows = Object.entries(stats)
-                .map(([region, visits]) => ({
-                    region,
-                    visits,
-                    cost: visits * costPerVisit
-                }))
-                .sort((a, b) => b.cost - a.cost);
-
-            if (rows.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-400 text-xs">Nenhum dado pendente encontrado.</td></tr>`;
-                return;
-            }
-
-            rows.forEach(row => {
-                const percent = totalBudget > 0 ? (row.cost / totalBudget * 100).toFixed(1) : 0;
-                const tr = document.createElement('tr');
-                tr.className = "hover:bg-slate-50";
-                tr.innerHTML = `
-                    <td class="p-4 font-medium text-slate-700">${row.region}</td>
-                    <td class="p-4 text-center text-slate-600 bg-slate-50">${row.visits}</td>
-                    <td class="p-4 text-right font-bold text-slate-700">${formatCurrency(row.cost)}</td>
-                    <td class="p-4 text-center">
-                        <div class="flex items-center gap-2 justify-center">
-                            <div class="w-16 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                                <div class="h-full bg-senac-blue" style="width: ${Math.min(percent, 100)}%"></div>
-                            </div>
-                            <span class="text-[10px] text-slate-500">${percent}%</span>
-                        </div>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-
-        // --- 3. INICIALIZAÇÃO E LOGIN (Padrão) ---
+        // --- 2. INICIALIZAÇÃO E LOGIN ---
 
         function initUsers() {
             try {
@@ -741,7 +544,7 @@
                     localStorage.setItem('senacSupervisors', JSON.stringify(users));
                 }
             } catch (e) {
-                console.warn("Erro no localStorage", e);
+                console.warn("Erro no localStorage, usando padrão", e);
                 users = [...DEFAULT_USERS];
             }
             populateLoginRegions();
@@ -749,11 +552,20 @@
 
         function populateLoginRegions() {
             const loginSel = document.getElementById('loginRegion');
+            const newUserSel = document.getElementById('newUserRegion');
+            
             let options = '';
             PREDEFINED_REGIONS.forEach(r => {
                 options += `<option value="${r}">${r}</option>`;
             });
-            if(loginSel) loginSel.innerHTML = '<option value="">Acesso Geral (Todas as Regiões)</option>' + options;
+
+            if(loginSel) {
+                // A primeira opção agora é Acesso Geral (valor vazio)
+                loginSel.innerHTML = '<option value="">Acesso Geral (Todas as Regiões)</option>' + options;
+            }
+            if(newUserSel) {
+                newUserSel.innerHTML = '<option value="">Acesso Geral (Todas as Regiões)</option>' + options;
+            }
         }
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -765,19 +577,63 @@
             const region = document.getElementById('loginRegion').value;
             const emailContainer = document.getElementById('emailContainer');
             const passwordContainer = document.getElementById('passwordContainer');
+            const recoveryMsg = document.getElementById('recoveryMsg');
 
-            if (region === "") { 
+            if (region === "") { // Acesso Geral
                 emailContainer.classList.add('hidden');
                 passwordContainer.classList.remove('hidden');
-            } else { 
+                recoveryMsg.classList.add('hidden'); // Reseta a mensagem ao trocar
+            } else { // Região Específica
                 emailContainer.classList.remove('hidden');
                 passwordContainer.classList.add('hidden');
+                recoveryMsg.classList.add('hidden');
             }
         }
 
+        // --- NOVA LÓGICA DE RECUPERAÇÃO DE SENHA E VISUALIZAÇÃO ---
+        function triggerPasswordRecovery() {
+            const recoveryMsg = document.getElementById('recoveryMsg');
+            recoveryMsg.classList.remove('hidden');
+        }
+
+        function togglePasswordVisibility() {
+            const passwordInput = document.getElementById('loginPassword');
+            const eyeIcon = document.getElementById('eyeIcon');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                eyeIcon.setAttribute('data-lucide', 'eye-off');
+            } else {
+                passwordInput.type = 'password';
+                eyeIcon.setAttribute('data-lucide', 'eye');
+            }
+            lucide.createIcons();
+        }
+
+        function copyEmail() {
+            const email = document.getElementById('supportEmail').innerText;
+            navigator.clipboard.writeText(email).then(() => {
+                alert("E-mail copiado para a área de transferência!");
+            });
+        }
+
+        function openMailClient() {
+            // Gera um e-mail de SOLICITAÇÃO, não de resposta com a senha.
+            const emailTo = "tutoria.aprendizagem@pr.senac.br";
+            const subject = "Solicitação de Senha - Painel Supervisão (Acesso Geral)";
+            const body = "Olá equipe de Tutoria,\n\nSolicito a senha de acesso para o Painel de Supervisão (Acesso Geral).\n\nAtt,\n[Seu Nome/Unidade]";
+            
+            const link = document.createElement('a');
+            link.href = `mailto:${emailTo}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+            link.click();
+        }
+        // --------------------------------------------
+
         function performLogin() {
             const region = document.getElementById('loginRegion').value;
+            
             if (region === "") {
+                // LOGIN GERAL - SENHA
                 const password = document.getElementById('loginPassword').value;
                 if (password === "supervisao2026") {
                     currentUser = { name: "Gestão Central", region: "", email: "admin@senac.br" };
@@ -786,32 +642,41 @@
                     alert("Senha de acesso geral incorreta.");
                 }
             } else {
+                // LOGIN REGIONAL - EMAIL
                 const email = document.getElementById('loginEmail').value.trim().toLowerCase();
                 if (!email) return alert("Por favor, digite seu e-mail.");
-                // Lógica simplificada de login regional
-                currentUser = { name: "Supervisor Regional", region: region, email: email };
-                finishLogin();
+
+                const foundUser = users.find(u => {
+                    const emailMatch = u.email.toLowerCase() === email;
+                    if (!emailMatch) return false;
+                    // Se o usuário tem região, deve bater. Se for geral, pode logar na regional.
+                    if (u.region && u.region !== region) return false;
+                    return true;
+                });
+
+                if (foundUser) {
+                    currentUser = foundUser;
+                    // Se o usuário é geral mas logou numa regional, fixamos a região para o filtro
+                    if (!currentUser.region) {
+                         // opcional: clonar objeto para não alterar o original
+                         currentUser = { ...currentUser, region: region }; 
+                    }
+                    finishLogin();
+                } else {
+                    alert("E-mail não autorizado para a região selecionada.");
+                }
             }
         }
 
         function finishLogin() {
             const displayRegion = currentUser.region || "Acesso Geral";
+            
             document.getElementById('displayUserName').innerText = currentUser.name;
             document.getElementById('displayUserRegion').innerText = displayRegion;
             
-            // ANIMAÇÃO DE SAÍDA DO LOGIN
-            const loginPage = document.getElementById('loginPage');
-            loginPage.classList.add('transition-opacity', 'duration-500', 'opacity-0');
-            setTimeout(() => {
-                loginPage.style.display = 'none';
-                
-                // EXIBE O PAINEL PRINCIPAL
-                const appContainer = document.getElementById('appContainer');
-                appContainer.classList.remove('hidden');
-                appContainer.classList.add('flex');
-                
-            }, 500);
+            document.getElementById('authModal').style.display = 'none';
             
+            // Aplica filtro de região automaticamente se não for Geral
             if (displayRegion !== "Acesso Geral" && displayRegion !== "") {
                 const filterReg = document.getElementById('filterRegiao');
                 if (filterReg) {
@@ -821,6 +686,7 @@
                     document.getElementById('regionLockMsg').classList.remove('hidden');
                 }
             }
+            
             tryLoadDefault();
         }
 
@@ -828,18 +694,34 @@
             window.location.reload();
         }
 
-        function resetUsersToDefault() {
-             localStorage.removeItem('senacSupervisors');
-             window.location.reload();
+        function toggleAddUser(show) {
+            const loginForm = document.getElementById('loginForm');
+            const addUserForm = document.getElementById('addUserForm');
+            if(loginForm) loginForm.classList.toggle('hidden', show);
+            if(addUserForm) addUserForm.classList.toggle('hidden', !show);
         }
 
-        // --- 4. PROCESSAMENTO DE ARQUIVOS (Excel) ---
+        function saveNewUser() {
+            const name = document.getElementById('newUserName').value.trim();
+            const email = document.getElementById('newUserEmail').value.trim();
+            const region = document.getElementById('newUserRegion').value;
+
+            if (!name || !email) return alert("Preencha nome e e-mail.");
+
+            users.push({ name, email, region });
+            localStorage.setItem('senacSupervisors', JSON.stringify(users));
+            
+            toggleAddUser(false);
+            alert(`Usuário ${name} cadastrado com sucesso neste navegador! Faça login para continuar.`);
+        }
+
+        // --- 3. CARREGAMENTO DE ARQUIVOS ---
 
         async function tryLoadDefault() {
             const spinner = document.getElementById('loadingSpinner');
             if(spinner) spinner.classList.remove('hidden');
-            // Tentativa de carregar arquivo local padrão se existir no ambiente
-            const candidates = ["Dados Gerais.xlsm", "Dados Gerais.xlsx", "dados gerais.xlsx"];
+
+            const candidates = ["Dados Gerais.xlsm", "Dados Gerais.xlsx", "dados gerais.xlsx", "Dados Gerais.csv"];
             let fileFound = false;
 
             for (const filename of candidates) {
@@ -848,13 +730,20 @@
                     if (response.ok) {
                         const blob = await response.blob();
                         const file = new File([blob], filename);
-                        processFile({ files: [file] });
+                        const dummyInput = { files: [file] };
+                        processFile(dummyInput);
                         fileFound = true;
                         break; 
                     }
-                } catch (e) { }
+                } catch (e) {
+                    console.log(`Tentativa falhou para ${filename}`);
+                }
             }
-            if (!fileFound && spinner) spinner.classList.add('hidden');
+
+            if (!fileFound) {
+                console.warn("Nenhum arquivo padrão encontrado.");
+                if(spinner) spinner.classList.add('hidden');
+            }
         }
 
         function processFile(input) {
@@ -872,10 +761,43 @@
                         const data = new Uint8Array(e.target.result);
                         const workbook = XLSX.read(data, {type: 'array'});
                         
-                        // Busca abas flexíveis
+                        // 1. Processar Usuários
+                        const userSheetName = workbook.SheetNames.find(n => 
+                            n.toLowerCase().trim() === "usuarios" || 
+                            n.toLowerCase().trim() === "usuários" ||
+                            n.toLowerCase().trim() === "login"
+                        );
+
+                        if (userSheetName) {
+                            const userWs = workbook.Sheets[userSheetName];
+                            const userJson = XLSX.utils.sheet_to_json(userWs);
+                            const loadedUsers = userJson.map(row => {
+                                const getVal = (keys) => {
+                                    for(let k of keys) {
+                                        const key = Object.keys(row).find(rk => rk.toLowerCase().trim() === k.toLowerCase());
+                                        if(key) return row[key];
+                                    }
+                                    return '';
+                                };
+                                return {
+                                    name: getVal(['Nome', 'Usuario', 'User']),
+                                    email: getVal(['Email', 'E-mail', 'Mail']),
+                                    region: getVal(['Regiao', 'Região', 'Regional'])
+                                };
+                            }).filter(u => u.name && u.email);
+
+                            if (loadedUsers.length > 0) {
+                                users = loadedUsers;
+                                localStorage.setItem('senacSupervisors', JSON.stringify(users));
+                            }
+                        }
+
+                        // 2. Processar Abas de Dados
                         let sheetQuali = workbook.SheetNames.find(n => n.trim().toLowerCase() === "dados gerais");
                         if(!sheetQuali) sheetQuali = workbook.SheetNames.find(n => n.toLowerCase().includes("dados gerais") && !n.toLowerCase().includes("tec"));
+                        
                         let sheetTec = workbook.SheetNames.find(n => n.toLowerCase().includes("dados gerais") && (n.toLowerCase().includes("tec") || n.toLowerCase().includes("téc")));
+                        
                         if(!sheetQuali && !sheetTec) sheetQuali = workbook.SheetNames[0];
 
                         db.qualificacao = [];
@@ -884,7 +806,7 @@
                         if (sheetQuali) db.qualificacao = parseSheet(workbook.Sheets[sheetQuali]);
                         if (sheetTec) db.tecnico = parseSheet(workbook.Sheets[sheetTec]);
 
-                        switchTab(currentScope);
+                        switchScope(currentScope);
                         
                         if(spinner) spinner.classList.add('hidden');
                         const btnText = document.getElementById('btnUploadText');
@@ -900,10 +822,13 @@
             reader.readAsArrayBuffer(file);
         }
 
+        // Função genérica para ler uma aba e retornar array formatado
         function parseSheet(worksheet) {
             const json = XLSX.utils.sheet_to_json(worksheet, {header: 1, defval: ""});
             if(json.length < 2) return [];
+
             const headers = json[0].map(h => String(h).trim());
+            
             const getIdx = (candidates) => {
                 for(let c of candidates) {
                     const i = headers.findIndex(h => h.toLowerCase().includes(c.toLowerCase()));
@@ -915,16 +840,16 @@
             const map = {
                 nome: getIdx(["Apr. Nome", "Nome", "Jovem"]),
                 turma: getIdx(["Turma", "Matrícula"]),
-                curso: getIdx(["Curso", "Nome do Curso"]), 
+                curso: getIdx(["Curso", "Nome do Curso"]), // Adicionado
                 hrTeoria: getIdx(["Teoria Hr Ini", "Horario Teoria"]),
-                hrPratica: getIdx(["Horário do jovem", "Pratica Hr Ini"]),
+                hrPratica: getIdx(["Horário do jovem", "Pratica Hr Ini", "Horario Pratica", "Horário Prática"]), // CAMPO ADICIONADO
                 cidade: getIdx(["Emp. Cidade"]),
                 regiao: getIdx(["Atuação Senac", "Região"]),
                 empresa: getIdx(["Razao Social", "Empresa"]),
                 supNome: getIdx(["Sup. Cadastrado", "Supervisor"]),
-                supEmpresa: getIdx(["Sup. na Empresa"]),
-                supCel: getIdx(["Sup Celular", "Contato"]),
-                supEmail: getIdx(["Sup. Email", "Email Supervisor"]), 
+                supEmpresa: getIdx(["Sup. na Empresa", "Supervisor Empresa"]), // Adicionado
+                supCel: getIdx(["Sup Celular", "Contato", "Sup Telefone"]),
+                supEmail: getIdx(["Sup. Email", "Email Supervisor", "E-mail"]), 
                 dtIni: getIdx(["TurDatIni"]),
                 dtFim: getIdx(["TurDatFim"]),
                 v1Dt: getIdx(["Data da Visita 1"]),
@@ -937,18 +862,24 @@
 
             return json.slice(1).map((row, i) => {
                 if(!row[map.nome]) return null;
+                
                 const idxV2St = map.v2Dt > -1 ? map.v2Dt + 1 : -1; 
                 const idxV3St = map.v3Dt > -1 ? map.v3Dt + 1 : -1;
+
                 return {
                     id: i,
                     nome: String(row[map.nome]).trim(),
                     turma: String(row[map.turma] || "N/A"),
+                    curso: row[map.curso] || "Não Informado", // Captura
+                    hrTeoria: formatExcelTime(row[map.hrTeoria]),
+                    hrPratica: formatExcelTime(row[map.hrPratica]) || "Não Informado", // Captura do Horário de Prática
                     cidade: row[map.cidade] || "N/A",
                     regiao: row[map.regiao] || "Geral",
                     empresa: row[map.empresa],
                     supervisor: {
                         nome: row[map.supNome] || "Não inf.",
-                        cel: row[map.supCel] || "",
+                        empresa: row[map.supEmpresa] || "", // Campo Vazio por padrão
+                        cel: row[map.supCel] || "",       // Campo Vazio por padrão
                         email: row[map.supEmail] || "" 
                     },
                     inicio: parseDate(row[map.dtIni]),
@@ -957,15 +888,12 @@
                         { date: parseDate(row[map.v1Dt]), status: String(row[map.v1St]).trim(), label: "1ª" },
                         { date: parseDate(row[map.v2Dt]), status: String(row[idxV2St] || row[map.v2St]).trim(), label: "2ª" },
                         { date: parseDate(row[map.v3Dt]), status: String(row[idxV3St] || row[map.v3St]).trim(), label: "3ª" }
-                    ],
-                    hrTeoria: formatExcelTime(row[map.hrTeoria]),
-                    hrPratica: formatExcelTime(row[map.hrPratica])
+                    ]
                 };
             }).filter(x => x);
         }
 
-        // --- 5. HELPERS ---
-
+        // --- Helpers ---
         function parseDate(val) {
             if(!val) return null;
             if(val instanceof Date) return val;
@@ -1000,10 +928,14 @@
             const isEncerrado = jovem.fim && jovem.fim < new Date();
             let globalStatus = "No Prazo";
             let globalColor = "green"; 
-            if (isEncerrado) return { ...jovem, processedVisits: jovem.visits, globalStatus: "Encerrado", globalColor: "gray", isEncerrado };
+            
+            if (isEncerrado) {
+                return { ...jovem, processedVisits: jovem.visits, globalStatus: "Encerrado", globalColor: "gray", isEncerrado };
+            }
 
             let lastReferenceDate = jovem.inicio;
             let visitsDoneCount = 0;
+
             const processedVisits = jovem.visits.map(v => {
                 let state = "pending";
                 const isRealizada = v.status.toLowerCase().includes("realizada");
@@ -1015,19 +947,36 @@
                 return { ...v, state };
             });
 
-            if (visitsDoneCount === 3) return { ...jovem, processedVisits, globalStatus: "Concluído", globalColor: "blue", isEncerrado };
-            if (!lastReferenceDate) return { ...jovem, processedVisits, globalStatus: "Sem Data Ini", globalColor: "gray", isEncerrado };
+            if (visitsDoneCount === 3) {
+                globalStatus = "Concluído";
+                globalColor = "blue";
+                return { ...jovem, processedVisits, globalStatus, globalColor, isEncerrado };
+            }
+
+            if (!lastReferenceDate) {
+                globalStatus = "Sem Data Ini";
+                globalColor = "gray";
+                return { ...jovem, processedVisits, globalStatus, globalColor, isEncerrado };
+            }
 
             const deadline = new Date(lastReferenceDate);
+            // Lógica Diferenciada: 90 dias para Qualificação, 120 dias (4 meses) para Técnico
             const daysToAdd = currentScope === 'tecnico' ? 120 : 90;
             deadline.setDate(deadline.getDate() + daysToAdd);
             
-            if (new Date() > deadline) { globalStatus = "Atrasado"; globalColor = "red"; }
+            const today = new Date();
+            if (today > deadline) {
+                globalStatus = "Atrasado";
+                globalColor = "red";
+            } else {
+                globalStatus = "No Prazo";
+                globalColor = "green";
+            }
 
             return { ...jovem, processedVisits, globalStatus, globalColor, isEncerrado };
         }
 
-        // --- 6. RENDERIZAÇÃO DASHBOARD ---
+        // --- FILTROS E RENDERIZAÇÃO ---
 
         function populateFilters() {
             const selReg = document.getElementById('filterRegiao');
@@ -1037,6 +986,7 @@
             const fileRegions = [...new Set(currentData.map(i => i.regiao))].filter(Boolean);
             const allRegions = [...new Set([...PREDEFINED_REGIONS, ...fileRegions])].sort();
             
+            // Lógica de Filtro Travado se o usuário já estiver logado
             if (currentUser && currentUser.region) {
                 selReg.innerHTML = `<option value="${currentUser.region}">${currentUser.region}</option>`;
                 selReg.value = currentUser.region;
@@ -1055,8 +1005,11 @@
         }
 
         function handleRegionChange() {
-            updateCityOptions(document.getElementById('filterRegiao').value);
-            applyFilters();
+            const el = document.getElementById('filterRegiao');
+            if(el) {
+                updateCityOptions(el.value);
+                applyFilters();
+            }
         }
 
         function updateCityOptions(region) {
@@ -1073,7 +1026,10 @@
 
             selCid.innerHTML = '<option value="">Todas as Cidades</option>';
             availableCities.forEach(c => selCid.innerHTML += `<option value="${c}">${c}</option>`);
-            if (availableCities.includes(currentVal)) selCid.value = currentVal;
+            
+            if (availableCities.includes(currentVal)) {
+                selCid.value = currentVal;
+            }
         }
 
         function filterByStatus(status) {
@@ -1082,21 +1038,36 @@
         }
 
         function applyFilters() {
-            const search = document.getElementById('filterSearch').value.toLowerCase();
-            const regiao = document.getElementById('filterRegiao').value;
-            const cidade = document.getElementById('filterCidade').value;
-            const contractStatus = document.getElementById('filterContractStatus').value;
+            const searchEl = document.getElementById('filterSearch');
+            const regEl = document.getElementById('filterRegiao');
+            const cidEl = document.getElementById('filterCidade');
+            const statusEl = document.getElementById('filterContractStatus');
 
-            filteredData = (db[currentScope] || []).map(analyzeJovem).filter(item => {
+            if(!searchEl || !regEl || !cidEl || !statusEl) return;
+
+            const rawData = db[currentScope] || [];
+            const search = searchEl.value.toLowerCase();
+            const regiao = regEl.value;
+            const cidade = cidEl.value;
+            const contractStatus = statusEl.value;
+
+            filteredData = rawData.map(analyzeJovem).filter(item => {
                 const nameMatch = item.nome && item.nome.toLowerCase().includes(search);
                 const classMatch = item.turma && item.turma.toLowerCase().includes(search);
                 if(search && !nameMatch && !classMatch) return false;
+                
                 if(regiao && item.regiao !== regiao) return false;
                 if(cidade && item.cidade !== cidade) return false;
-                if (contractStatus === 'active' && item.isEncerrado) return false;
-                if (contractStatus === 'closed' && !item.isEncerrado) return false;
+
+                if (contractStatus === 'active') {
+                    if (item.isEncerrado) return false;
+                } else if (contractStatus === 'closed') {
+                    if (!item.isEncerrado) return false;
+                }
+
                 if(currentStatusFilter === 'atrasado' && item.globalColor !== 'red') return false;
                 if(currentStatusFilter === 'noprazo' && item.globalColor !== 'green' && item.globalColor !== 'blue') return false;
+
                 return true;
             });
 
@@ -1112,13 +1083,26 @@
             const atrasados = filteredData.filter(i => i.globalColor === 'red').length;
             const noPrazo = filteredData.filter(i => i.globalColor === 'green' || i.globalColor === 'blue').length;
 
-            document.getElementById('kpiTotal').innerText = total;
-            document.getElementById('kpiAtrasados').innerText = atrasados;
-            document.getElementById('kpiNoPrazo').innerText = noPrazo;
+            const kpiTotal = document.getElementById('kpiTotal');
+            const kpiAtrasados = document.getElementById('kpiAtrasados');
+            const kpiNoPrazo = document.getElementById('kpiNoPrazo');
+
+            if(kpiTotal) kpiTotal.innerText = total;
+            if(kpiAtrasados) kpiAtrasados.innerText = atrasados;
+            if(kpiNoPrazo) kpiNoPrazo.innerText = noPrazo;
+
+            // ATUALIZAÇÃO DINÂMICA DO BOTÃO GERAR FORMULÁRIOS
+            const btnWord = document.getElementById('btnGenerateWord');
+            if(btnWord) {
+                // Atualiza o texto do botão com a quantidade de itens filtrados
+                btnWord.innerHTML = `<i data-lucide="file-text" class="w-4 h-4"></i> Gerar Formulários (${filteredData.length})`;
+                if(typeof lucide !== 'undefined') lucide.createIcons();
+            }
 
             const ctxStatus = document.getElementById('chartStatus');
             if(ctxStatus) {
                 if(chartStatusInstance) chartStatusInstance.destroy();
+                
                 const statusCounts = { 'No Prazo': 0, 'Atrasado': 0, 'Concluído': 0, 'Encerrado': 0 };
                 filteredData.forEach(i => {
                     if(i.globalColor === 'green') statusCounts['No Prazo']++;
@@ -1138,19 +1122,27 @@
                             hoverOffset: 10
                         }]
                     },
-                    options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, usePointStyle: true, font: {family: 'Inter'} } } } }
+                    options: { 
+                        responsive: true, 
+                        maintainAspectRatio: false, 
+                        cutout: '70%',
+                        plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, usePointStyle: true, font: {family: 'Inter'} } } } 
+                    }
                 });
             }
 
             const ctxRegiao = document.getElementById('chartRegiao');
             if(ctxRegiao) {
                 if(chartRegiaoInstance) chartRegiaoInstance.destroy();
+
                 const counts = {};
                 const isRegiaoSelected = document.getElementById('filterRegiao').value !== "";
+                
                 filteredData.forEach(i => {
                     const key = isRegiaoSelected ? i.cidade : i.regiao;
                     counts[key] = (counts[key] || 0) + 1;
                 });
+                
                 const sorted = Object.entries(counts).sort((a,b) => b[1] - a[1]).slice(0, 5);
 
                 chartRegiaoInstance = new Chart(ctxRegiao, {
@@ -1164,7 +1156,13 @@
                             borderRadius: 4
                         }]
                     },
-                    options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { grid: {display: false} }, y: { grid: {display: false} } } }
+                    options: { 
+                        responsive: true, 
+                        maintainAspectRatio: false, 
+                        indexAxis: 'y', 
+                        plugins: { legend: { display: false } }, 
+                        scales: { x: { grid: {display: false} }, y: { grid: {display: false} } } 
+                    }
                 });
             }
         }
@@ -1180,7 +1178,21 @@
             tbody.innerHTML = '';
 
             if (filteredData.length === 0) {
-                 tbody.innerHTML = `<tr><td colspan="6" class="p-12 text-center text-slate-400">Nenhum registro encontrado.</td></tr>`;
+                 tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="p-12 text-center text-slate-400">
+                            <div class="flex flex-col items-center gap-3">
+                                <div class="w-16 h-16 bg-blue-50 text-senac-blue rounded-full flex items-center justify-center mb-2">
+                                    <i data-lucide="folder-open" class="w-8 h-8"></i>
+                                </div>
+                                <p class="text-sm font-bold text-slate-600">Bem-vindo ao Painel de Supervisão</p>
+                                <p class="text-xs text-slate-400 max-w-xs text-center">
+                                    Para começar, certifique-se de que o arquivo <strong>Dados Gerais.xlsm</strong> está carregado ou utilize o botão "Recarregar" acima.
+                                </p>
+                            </div>
+                        </td>
+                    </tr>`;
+                 if(typeof lucide !== 'undefined') lucide.createIcons();
                  return;
             }
             
@@ -1192,9 +1204,13 @@
             const end = start + itemsPerPage;
             const pageData = filteredData.slice(start, end);
 
-            document.getElementById('pageDisplay').innerText = `${currentPage} / ${totalPages}`;
-            document.getElementById('btnPrev').disabled = currentPage === 1;
-            document.getElementById('btnNext').disabled = currentPage === totalPages;
+            const pageDisplay = document.getElementById('pageDisplay');
+            const btnPrev = document.getElementById('btnPrev');
+            const btnNext = document.getElementById('btnNext');
+
+            if(pageDisplay) pageDisplay.innerText = `${currentPage} / ${totalPages}`;
+            if(btnPrev) btnPrev.disabled = currentPage === 1;
+            if(btnNext) btnNext.disabled = currentPage === totalPages;
 
             const formatDate = (d) => d ? d.toLocaleDateString('pt-BR') : '-';
 
@@ -1203,10 +1219,19 @@
                 item.processedVisits.forEach((v, idx) => {
                     let color = "bg-slate-200";
                     if(v.state === 'done') color = "bg-emerald-500 shadow-md shadow-emerald-200";
+                    
+                    const dateDisplay = v.date ? `<div class="text-[9px] text-slate-500 mt-1 font-mono">${formatDate(v.date)}</div>` : `<div class="text-[9px] text-slate-300 mt-1 font-mono">-</div>`;
+
                     visitsHtml += `
                         <div class="flex flex-col items-center group relative cursor-help">
                             <div class="w-8 h-8 rounded-full ${color} flex items-center justify-center text-white text-xs font-bold border border-white">
                                 ${idx + 1}
+                            </div>
+                            ${dateDisplay}
+                            <div class="absolute bottom-full mb-2 hidden group-hover:block bg-slate-800 text-white text-[10px] p-2 rounded shadow-lg z-50 whitespace-nowrap">
+                                <strong>${v.label}</strong><br>
+                                Data: ${formatDate(v.date)}<br>
+                                Status: ${v.status}
                             </div>
                         </div>
                     `;
@@ -1236,6 +1261,7 @@
                         <div class="text-xs text-slate-600">
                             <div class="font-medium">${item.supervisor.nome}</div>
                             ${item.supervisor.cel ? `<div class="text-[10px] text-slate-400 flex items-center gap-1 mt-0.5"><i data-lucide="phone" class="w-2.5 h-2.5"></i> ${item.supervisor.cel}</div>` : ''}
+                             ${item.supervisor.email ? `<div class="text-[10px] text-slate-400 flex items-center gap-1 mt-0.5 truncate max-w-[150px]" title="${item.supervisor.email}"><i data-lucide="mail" class="w-2.5 h-2.5"></i> ${item.supervisor.email}</div>` : ''}
                         </div>
                     </td>
                     <td class="p-4 align-top text-center text-xs font-mono text-slate-500">
@@ -1264,21 +1290,379 @@
                 "Nome do Jovem", "Turma", "Curso", "Horário", "Empresa", "Cidade", "Região",
                 "Supervisor Senac", "Supervisor Empresa", "Celular Sup", "Email Sup",
                 "Data Início", "Data Fim",
-                "Status Geral"
+                "Status Geral", 
+                "Data V1", "Status V1",
+                "Data V2", "Status V2",
+                "Data V3", "Status V3"
             ]];
             filteredData.forEach(item => {
+                const v1 = item.processedVisits[0];
+                const v2 = item.processedVisits[1];
+                const v3 = item.processedVisits[2];
                 exportData.push([
                     item.nome, item.turma, item.curso, item.hrTeoria, item.empresa, item.cidade, item.regiao,
                     item.supervisor.nome, item.supervisor.empresa, item.supervisor.cel, item.supervisor.email,
                     formatDate(item.inicio), formatDate(item.fim),
-                    item.globalStatus
+                    item.globalStatus,
+                    formatDate(v1.date), v1.status,
+                    formatDate(v2.date), v2.status,
+                    formatDate(v3.date), v3.status
                 ]);
             });
             const ws = XLSX.utils.aoa_to_sheet(exportData);
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, `Relatorio_${currentScope}`);
-            XLSX.writeFile(wb, `Relatorio_Senac_${currentScope}.xlsx`);
+            XLSX.writeFile(wb, `Relatorio_Senac_${currentScope}_${new Date().toLocaleDateString('pt-BR').replace(/\//g,'-')}.xlsx`);
+        }
+
+        // --- GERADOR DE FORMULÁRIOS WORD (MAIL MERGE OFICIAL) ---
+        function generateWordForms() {
+            if (filteredData.length === 0) return alert("Nenhum jovem selecionado para gerar formulários.");
+            if (filteredData.length > 200) {
+                 if(!confirm(`Você está prestes a gerar ${filteredData.length} formulários em um único arquivo. Isso pode demorar. Deseja continuar?`)) return;
+            }
+
+            const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+            const currentMonth = monthNames[new Date().getMonth()];
+            const currentYear = new Date().getFullYear();
+
+            // Helper para gerar linhas (REDUZIDO HEIGHT PARA 15px)
+            function createLines(count) {
+                let linesHtml = '<table style="width: 100%; border-collapse: collapse; border: none; margin-top: 0px; margin-bottom: 5px;">';
+                for(let i=0; i<count; i++) {
+                    linesHtml += '<tr><td style="border-bottom: 1px solid black; height: 15px; border-left: none; border-right: none; border-top: none; padding: 0;">&nbsp;</td></tr>';
+                }
+                linesHtml += '</table>';
+                return linesHtml;
+            }
+
+            // HTML DO WORD COM CSS ROBUSTO PARA LAYOUT FIXO
+            // Borda removida do @page para evitar erro de margem
+            // Padding da célula reduzido para 1px
+            let content = `
+                <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+                <head>
+                    <meta charset='utf-8'>
+                    <style>
+                        @page Section1 {
+                            size: 595.3pt 841.9pt; 
+                            margin: 1.0cm 1.5cm 1.0cm 1.5cm; /* Top Right Bottom Left */
+                            mso-header-margin: 35.4pt; 
+                            mso-footer-margin: 35.4pt; 
+                            mso-paper-source: 0;
+                            mso-header: h1;
+                            mso-footer: f1;
+                            mso-page-numbers-start: 1; /* Força reinício da numeração */
+                        }
+                        div.Section1 { page: Section1; }
+                        
+                        body { font-family: 'Arial', sans-serif; font-size: 11pt; }
+                        
+                        /* TABELAS COM LAYOUT FIXO - ESSENCIAL PARA MANTER LARGURA */
+                        table { width: 100%; border-collapse: collapse; border: none; margin-bottom: 5px; table-layout: fixed; }
+                        td { border: 1px solid #000; padding: 1px 4px; font-size: 11pt; vertical-align: middle; word-wrap: break-word; }
+                        
+                        .no-border td { border: none; }
+                        .header-label { font-weight: bold; background-color: #f2f2f2; }
+                        
+                        /* Título e Subtítulos */
+                        .main-title { text-align: center; font-weight: bold; font-size: 12pt; text-transform: uppercase; margin-bottom: 10px; margin-top: 0; }
+                        .subtitle { font-size: 11pt; text-align: justify; margin-bottom: 10px; }
+                        
+                        /* REMOVIDO UPPERCASE DOS TÍTULOS DE SEÇÃO */
+                        .section-title { font-weight: bold; font-size: 11pt; margin-top: 15px; margin-bottom: 5px; background-color: #e0e0e0; padding: 2px; border: 1px solid #000; } 
+                        
+                        .question-text { font-size: 11pt; font-weight: normal; margin-bottom: 3px; }
+                        .checkbox-group { margin-bottom: 5px; font-size: 11pt; }
+                        
+                        .keep-together { page-break-inside: avoid; break-inside: avoid; }
+                        .page-break { page-break-before: always; }
+                    </style>
+                </head>
+                <body>
+                <div class=Section1>
+            `;
+
+            // Helper de Horário
+            function getEarliestTime(t1, t2) {
+                const toMinutes = (timeStr) => {
+                    if (!timeStr || typeof timeStr !== 'string') return 99999; 
+                    const parts = timeStr.trim().split(':');
+                    if (parts.length < 2) return 99999;
+                    const h = parseInt(parts[0]);
+                    const m = parseInt(parts[1]);
+                    if (isNaN(h) || isNaN(m)) return 99999;
+                    return (h * 60) + m;
+                };
+                const m1 = toMinutes(t1);
+                const m2 = toMinutes(t2);
+                if (m1 === 99999 && m2 === 99999) return "Não Informado";
+                if (m1 < m2) return t1;
+                return t2;
+            }
+
+            // LOOP DE ALUNOS
+            filteredData.forEach((item, index) => {
+                // Quebra de seção para reiniciar paginação e margens a cada aluno
+                if (index > 0) content += `<br clear=all style='page-break-before:always;mso-break-type:section-break'>`;
+
+                const earliestTime = getEarliestTime(item.hrTeoria, item.hrPratica);
+
+                content += `
+                <!-- TÍTULO CENTRALIZADO (APARECE SÓ NA PÁGINA 1 DESTA SEÇÃO) - ESTA NO CORPO AGORA -->
+                <div class="main-title">ACOMPANHAMENTO DO SENAC NO DESENVOLVIMENTO DA PRÁTICA PROFISSIONAL</div>
+
+                <div class="subtitle">
+                    Este formulário deverá ser preenchido pelo(a) supervisor(a) da prática profissional designado(a) pelo Senac, em período não superior a 90 dias, conforme previsto na legislação do Programa de Aprendizagem. As visitas técnicas periódicas integram o processo formativo, garantindo a verificação do desenvolvimento das competências dos(as) aprendizes no ambiente de trabalho.
+                </div>
+
+                <!-- TABELA PRINCIPAL COM LARGURAS FIXAS (Colunas Definidas) -->
+                <table border="1" cellspacing="0" cellpadding="0">
+                    <col width="18%"> <!-- Rótulo Pequeno -->
+                    <col width="32%"> <!-- Valor -->
+                    <col width="18%"> <!-- Rótulo Pequeno -->
+                    <col width="32%"> <!-- Valor -->
+                    <tr>
+                        <td class="header-label">Aprendiz:</td>
+                        <td colspan="3">${item.nome}</td>
+                    </tr>
+                    <tr>
+                        <td class="header-label">Curso:</td>
+                        <td>${item.curso}</td>
+                        <td class="header-label">Turma:</td>
+                        <td>${item.turma}</td>
+                    </tr>
+                    <tr>
+                        <td class="header-label">Empresa:</td>
+                        <td>${item.empresa}</td>
+                        <td class="header-label">Cidade:</td>
+                        <td>${item.cidade}</td>
+                    </tr>
+                     <tr>
+                        <td class="header-label">Supervisor(a):</td>
+                        <td>${item.supervisor.nome}</td>
+                        <td class="header-label">Mês:</td>
+                        <td>${currentMonth}/${currentYear}</td>
+                    </tr>
+                    <tr>
+                        <td class="header-label">Sup. Empresa:</td>
+                        <td>${item.supervisor.empresa}</td>
+                        <td class="header-label">Contato:</td>
+                        <td>${item.supervisor.cel}</td>
+                    </tr>
+                </table>
+
+                <div class="section-title">Informações sobre a prática profissional</div>
+
+                <div class="keep-together">
+                    <div class="section-title">1. Rodízio de atribuições/atividades</div>
+                    <div class="question-text">A empresa está proporcionando o rodízio de atribuições de acordo com as descritas na CBO e inseridas no Plano de Atividades, anexo ao contrato de trabalho especial de aprendizagem?</div>
+                    <div class="checkbox-group">( ) Sim &nbsp;&nbsp;&nbsp; ( ) Não</div>
+                    <div class="question-text">Informar quais atividades o(a) jovem está desenvolvendo:</div>
+                    ${createLines(3)}
+                </div>
+
+                <div class="keep-together">
+                    <div class="section-title">2. Direitos e deveres trabalhistas</div>
+                    <div class="question-text">A empresa está cumprindo os aspectos contratuais estabelecidos para o(a) aprendiz?</div>
+                    <div class="checkbox-group">( ) Sim &nbsp;&nbsp;&nbsp; ( ) Não</div>
+                    <div class="question-text">Se sim, quais?</div>
+                    <div class="checkbox-group">( ) Salário &nbsp;&nbsp; ( ) VT &nbsp;&nbsp; ( ) Computador</div>
+                    <div class="question-text">Outros:</div>
+                    ${createLines(1)}
+                </div>
+
+                <div class="keep-together">
+                    <div class="question-text" style="margin-top:10px;">Descrição dos aspectos contratuais que a empresa não está cumprindo, e, caso necessário, dos encaminhamentos a serem adotados em situações de desconformidade com a legislação trabalhista e/ou com o Programa de Aprendizagem:</div>
+                    ${createLines(3)}
+                </div>
+
+                <div class="keep-together">
+                    <div class="question-text" style="margin-top:10px;">O(A) aprendiz está cumprindo os aspectos contratuais estabelecidos?</div>
+                    <div class="checkbox-group">( ) Sim &nbsp;&nbsp;&nbsp; ( ) Não</div>
+                    <div class="question-text">Se sim, quais?</div>
+                    <div class="checkbox-group">( ) Frequência &nbsp;&nbsp; ( ) Pontualidade &nbsp;&nbsp; ( ) Bom Comportamento &nbsp;&nbsp; ( ) Uso do AVA</div>
+                    
+                    <div class="question-text">Outras observações sobre o cumprimento ou não dos aspectos contratuais pelo(a) aprendiz:</div>
+                    ${createLines(2)}
+                </div>
+
+                <div class="keep-together">
+                    <div class="section-title">3. Ambiente de trabalho</div>
+                    <div class="question-text">Como você avalia o ambiente de trabalho da empresa?</div>
+                    ${createLines(2)}
+                </div>
+
+                <div class="keep-together">
+                    <div class="section-title">4. Contato com o(a) supervisor(a) na empresa</div>
+                    <div class="question-text">Avalie a qualidade do contato e interação com o(a) supervisor(a) responsável pela prática profissional na empresa:</div>
+                    ${createLines(2)}
+                </div>
+
+                <div class="keep-together">
+                    <div class="section-title">5. Sugestões</div>
+                    <div class="question-text">Apresente sugestões para a melhoria da sua prática profissional e do Programa de Aprendizagem:</div>
+                    ${createLines(2)}
+                </div>
+
+                <div class="keep-together">
+                    <div class="section-title">OBSERVAÇÕES GERAIS</div>
+                    <div class="question-text">Observações gerais do(a) responsável pela Prática Profissional no Senac (pontos de atenção, encaminhamentos necessários, sugestões, aspectos a serem retomados na próxima visita à empresa, dentre outros):</div>
+                    ${createLines(5)} 
+                </div>
+
+                <br><br>
+                <!-- ASSINATURAS PÁGINA 2 -->
+                <div class="keep-together">
+                    <table style="width: 100%; border: none; border-collapse: collapse; margin-top: 20px;" width="100%">
+                        <col width="45%"><col width="10%"><col width="45%">
+                        <tr>
+                             <td style="border: none; padding: 0 10px; vertical-align: bottom; height: 40px;"></td>
+                            <td style="border: none;"></td>
+                            <td style="border: none; padding: 0 10px; vertical-align: bottom; height: 40px;"></td>
+                        </tr>
+                        <tr>
+                            <td style="border: none; border-top: 1px solid black; text-align: center; padding-top: 5px;">
+                                 Assinatura do(a) Supervisor(a) da Empresa
+                            </td>
+                            <td style="border: none;"></td>
+                            <td style="border: none; border-top: 1px solid black; text-align: center; padding-top: 5px;">
+                                 Assinatura do(a) Supervisor do Senac
+                            </td>
+                        </tr>
+                    </table>
+
+                    <br><br><br><br>
+                    <div style="text-align: right; font-size: 11pt; margin-top: 10px; margin-right: 0px;"><strong>Data:</strong> ____/______/________</div>
+                </div>
+
+                <br clear=all style='mso-special-character:line-break;page-break-before:always'>
+
+                <!-- PARTE 2: APRENDIZ -->
+                
+                <div class="section-title">Informações do(a) aprendiz: ${item.nome}</div>
+                <br>
+                <div class="question-text"><strong>Horário de Trabalho:</strong> ${earliestTime}</div>
+
+                <div class="keep-together">
+                    <div class="section-title">1. Considerações gerais do(a) aprendiz sobre a prática profissional</div>
+                    <div class="question-text"><strong>1.1 Avanços alcançados</strong></div>
+                    <div class="question-text">Descreva os principais avanços que você alcançou durante a prática profissional.</div>
+                    ${createLines(3)}
+                </div>
+
+                <div class="keep-together">
+                    <div class="question-text" style="margin-top:10px;"><strong>1.2 Dificuldades encontradas</strong></div>
+                    <div class="question-text">Relate as principais dificuldades que você encontrou durante a prática profissional.</div>
+                    ${createLines(3)}
+                </div>
+
+                <div class="keep-together">
+                    <div class="section-title">2. Aspectos contratuais</div>
+                    <div class="question-text">Você está ciente e cumprindo os aspectos contratuais estabelecidos?</div>
+                    <div class="checkbox-group">( ) Sim &nbsp;&nbsp;&nbsp; ( ) Não</div>
+                    <div class="question-text">Se sim, quais?</div>
+                    <div class="checkbox-group">( ) Frequência &nbsp;&nbsp; ( ) Pontualidade &nbsp;&nbsp; ( ) Bom Comportamento &nbsp;&nbsp; ( ) Uso do AVA</div>
+                </div>
+
+                <div class="keep-together">
+                    <div class="question-text" style="margin-top:10px;">A empresa está cumprindo os aspectos contratuais estabelecidos em contrato de trabalho especial?</div>
+                    <div class="checkbox-group">( ) Sim &nbsp;&nbsp;&nbsp; ( ) Não</div>
+                    <div class="question-text">Se sim, quais?</div>
+                    <div class="checkbox-group">( ) Salário &nbsp;&nbsp; ( ) VT &nbsp;&nbsp; ( ) Computador</div>
+                    <div class="question-text">Observações (se houver necessidade de indicar)</div>
+                    ${createLines(2)}
+                </div>
+
+                <div class="keep-together">
+                    <div class="section-title">3. Ambiente de trabalho</div>
+                    <div class="question-text">Como você avalia o ambiente de trabalho da empresa?</div>
+                    ${createLines(2)}
+                </div>
+
+                <div class="keep-together">
+                    <div class="section-title">4. Contato com o(a) supervisor(a) na empresa</div>
+                    <div class="question-text">Avalie a qualidade do contato e interação com o(a) supervisor(a) responsável pela prática profissional na empresa:</div>
+                    ${createLines(2)}
+                </div>
+
+                <div class="keep-together">
+                    <div class="section-title">5. Sugestões</div>
+                    <div class="question-text">Apresente sugestões para a melhoria da sua prática profissional e do Programa de Aprendizagem:</div>
+                    ${createLines(2)}
+                </div>
+
+                <div class="keep-together">
+                    <div class="section-title">OBSERVAÇÕES GERAIS</div>
+                    <div class="question-text">Observações gerais do(a) responsável pela Prática Profissional no Senac (pontos de atenção, encaminhamentos necessários, sugestões, aspectos a serem retomados na próxima visita à empresa, dentre outros):</div>
+                    ${createLines(5)} 
+                </div>
+
+                <br><br>
+                <!-- ASSINATURAS PÁGINA 4 -->
+                <div class="keep-together">
+                    <table style="width: 100%; border: none; border-collapse: collapse; margin-top: 20px;" width="100%">
+                         <col width="45%"><col width="10%"><col width="45%">
+                        <tr>
+                             <td style="border: none; padding: 0 10px; vertical-align: bottom; height: 40px;"></td>
+                            <td style="border: none;"></td>
+                            <td style="border: none; padding: 0 10px; vertical-align: bottom; height: 40px;"></td>
+                        </tr>
+                        <tr>
+                            <td style="border: none; border-top: 1px solid black; text-align: center; padding-top: 5px;">
+                                 Assinatura do(a) Supervisor do Senac
+                            </td>
+                            <td style="border: none;"></td>
+                            <td style="border: none; border-top: 1px solid black; text-align: center; padding-top: 5px;">
+                                 Visto do(a) Aprendiz
+                            </td>
+                        </tr>
+                    </table>
+
+                    <br><br><br><br>
+                    <div style="text-align: right; font-size: 11pt; margin-top: 10px; margin-right: 0px;"><strong>Data:</strong> ____/______/________</div>
+                </div>
+                `;
+            });
+
+            // FECHAMENTO E DEFINIÇÕES OCULTAS DE HEADER/FOOTER
+            content += `
+                </div>
+
+                <!-- DEFINIÇÕES DE HEADER E FOOTER (INSERIDAS AO FINAL, OCULTAS MAS REFERENCIADAS) -->
+                <div style="display:none;">
+                    
+                    <!-- CABEÇALHO (Logo APENAS - repete em todas as páginas) -->
+                    <div style='mso-element:header' id=h1>
+                        <p align=center style='margin-bottom:0in;text-align:center'>
+                            <img width=80 height=40 src="https://upload.wikimedia.org/wikipedia/commons/8/86/Senac_logo.svg">
+                        </p>
+                    </div>
+
+                    <!-- RODAPÉ (Paginação) -->
+                    <div style='mso-element:footer' id=f1>
+                        <p align=right style='margin-bottom:0px; text-align:right;'>
+                            <span style='font-size:9pt; font-family:Calibri;'>Página <span style='mso-field-code:" PAGE "'></span> de <span style='mso-field-code:" SECTIONPAGES "'></span></span>
+                        </p>
+                    </div>
+
+                </div>
+                </body></html>
+            `;
+
+            // Cria o Blob e faz o download
+            const blob = new Blob(['\ufeff', content], {
+                type: 'application/msword'
+            });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `Formularios_Visita_${currentScope}_${new Date().toLocaleDateString('pt-BR').replace(/\//g,'-')}.doc`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
     </script>
 </body>
 </html>
+
