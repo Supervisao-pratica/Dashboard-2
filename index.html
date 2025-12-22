@@ -63,8 +63,18 @@
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
         /* Loader */
-        .loader { border: 3px solid rgba(255,255,255,0.3); border-radius: 50%; border-top: 3px solid #f68d2e; width: 20px; height: 20px; animation: spin 1s linear infinite; }
+        .loader { border: 3px solid rgba(255,255,255,0.3); border-radius: 50%; border-top: 3px solid #f68d2e; width: 24px; height: 24px; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Loader Gigante para a Tela de Carregamento */
+        .loader-large {
+            border: 5px solid #e2e8f0; 
+            border-radius: 50%; 
+            border-top: 5px solid var(--senac-blue); 
+            width: 60px; 
+            height: 60px; 
+            animation: spin 1s linear infinite;
+        }
 
         /* Estilo para inputs financeiros */
         .money-input {
@@ -85,22 +95,21 @@
         }
 
         /* Z-Index Force */
-        #loginPage { z-index: 9999; }
-        #loginCard { z-index: 10000; }
+        #loginPage { z-index: 50; }
+        #globalLoader { z-index: 60; }
+        #appContainer { z-index: 10; }
     </style>
 </head>
 <body class="text-slate-800 flex flex-col overflow-hidden">
 
-    <!-- TELA DE LOGIN (Página Inteira - Correção de Visibilidade) -->
-    <div id="loginPage" class="fixed inset-0 flex items-center justify-center bg-slate-100" style="display: flex;">
-        <!-- Background decorativo (Fica atrás de tudo) -->
-        <div class="absolute inset-0 overflow-hidden pointer-events-none" style="z-index: 0;">
+    <!-- 1. TELA DE LOGIN -->
+    <div id="loginPage" class="fixed inset-0 flex items-center justify-center bg-slate-100">
+        <div class="absolute inset-0 overflow-hidden pointer-events-none">
             <div class="absolute -top-[20%] -left-[10%] w-[50%] h-[50%] rounded-full bg-blue-900/5 blur-3xl"></div>
             <div class="absolute top-[60%] -right-[10%] w-[40%] h-[60%] rounded-full bg-orange-500/5 blur-3xl"></div>
         </div>
 
-        <!-- Card de Login (Fica na frente) -->
-        <div id="loginCard" class="bg-white rounded-2xl shadow-xl border border-slate-200 w-full max-w-md p-8 relative overflow-hidden mx-4" style="position: relative; z-index: 10;">
+        <div id="loginCard" class="bg-white rounded-2xl shadow-xl border border-slate-200 w-full max-w-md p-8 relative overflow-hidden mx-4">
             <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-senac-blue to-senac-orange"></div>
             
             <div class="text-center mb-8">
@@ -109,7 +118,6 @@
                 <p class="text-sm text-slate-500 mt-1">Validação de Segurança</p>
             </div>
 
-            <!-- Formulário de Login -->
             <div id="loginForm">
                 <div class="space-y-4 mb-6">
                     <div>
@@ -117,7 +125,6 @@
                         <div class="relative">
                             <select id="loginRegion" onchange="toggleLoginMethod()" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 font-medium outline-none focus:border-senac-blue focus:ring-2 focus:ring-blue-50 appearance-none cursor-pointer">
                                 <option value="">Acesso Geral (Todas as Regiões)</option>
-                                <!-- Regiões populadas via JS -->
                             </select>
                             <i data-lucide="chevron-down" class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none"></i>
                         </div>
@@ -142,7 +149,7 @@
                     </div>
                 </div>
                 
-                <button onclick="performLogin()" class="w-full py-3 bg-senac-blue hover:bg-blue-800 text-white font-bold rounded-xl transition-all shadow-lg shadow-blue-900/10 flex items-center justify-center gap-2 cursor-pointer">
+                <button onclick="performLogin()" class="w-full py-3 bg-senac-blue hover:bg-blue-800 text-white font-bold rounded-xl transition-all shadow-lg shadow-blue-900/10 flex items-center justify-center gap-2 cursor-pointer transform hover:scale-[1.02]">
                     <span>Acessar Painel</span>
                     <i data-lucide="arrow-right" class="w-4 h-4"></i>
                 </button>
@@ -160,8 +167,15 @@
         </div>
     </div>
 
-    <!-- ÁREA PRINCIPAL DO SISTEMA (Inicialmente Oculta) -->
-    <div id="appContainer" class="hidden flex-col h-screen w-full">
+    <!-- 2. TELA DE CARREGAMENTO GLOBAL (NOVO) -->
+    <div id="globalLoader" class="fixed inset-0 flex flex-col items-center justify-center bg-white hidden">
+        <div class="loader-large mb-6"></div>
+        <h3 class="text-xl font-bold text-slate-700 mb-2">Aguarde um momento</h3>
+        <p id="loadingMessage" class="text-sm text-slate-500 font-mono">Autenticando usuário...</p>
+    </div>
+
+    <!-- 3. ÁREA PRINCIPAL DO SISTEMA (Inicialmente Oculta) -->
+    <div id="appContainer" class="hidden flex-col h-screen w-full opacity-0 transition-opacity duration-700">
         
         <!-- Header -->
         <header class="bg-white border-b border-slate-200 flex-shrink-0 z-30 shadow-sm flex flex-col">
@@ -192,7 +206,6 @@
                             <i data-lucide="upload-cloud" class="w-4 h-4 text-senac-orange group-hover:text-white transition-colors"></i>
                             <span id="btnUploadText" class="text-xs font-bold uppercase">Carregar Dados</span>
                         </button>
-                        <div id="loadingSpinner" class="hidden"><div class="loader border-t-senac-blue"></div></div>
                     </div>
                     
                     <button onclick="logout()" class="p-2 hover:bg-red-50 text-slate-400 hover:text-red-500 rounded-lg transition-colors" title="Sair / Trocar Usuário">
@@ -221,7 +234,7 @@
         <!-- VIEWS -->
         <div class="flex-1 overflow-hidden relative">
             
-            <!-- VIEW 1: DASHBOARD OPERACIONAL (Qualificação/Técnico) -->
+            <!-- VIEW 1: DASHBOARD OPERACIONAL -->
             <div id="viewDashboard" class="flex h-full w-full">
                 <!-- Sidebar Filtros -->
                 <aside class="w-80 bg-white border-r border-slate-200 flex flex-col z-20 overflow-y-auto shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
@@ -433,7 +446,6 @@
 
                     <!-- Painel de Inputs e KPIs -->
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                        
                         <!-- Input: Orçamento -->
                         <div class="card-bi p-5 border-l-4 border-l-emerald-500">
                             <label class="block text-xs font-bold text-slate-400 uppercase mb-2">Orçamento Disponível (R$)</label>
@@ -472,9 +484,8 @@
 
                     <!-- Gráfico e Saldo -->
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-                        <!-- Card de Saldo -->
                         <div class="col-span-1 card-bi p-6 flex flex-col items-center justify-center text-center">
-                            <p class="text-xs font-bold text-slate-400 uppercase mb-2">Saldo Projetado (Orçamento - Gastos)</p>
+                            <p class="text-xs font-bold text-slate-400 uppercase mb-2">Saldo Projetado</p>
                             <h2 class="text-4xl font-extrabold mb-2" id="finBalance">R$ 0,00</h2>
                             <div id="finStatusBadge" class="px-4 py-1 rounded-full text-xs font-bold uppercase bg-slate-100 text-slate-500">
                                 Aguardando Cálculo
@@ -483,8 +494,6 @@
                                 Se negativo, o orçamento não cobrirá todas as visitas pendentes.
                             </p>
                         </div>
-
-                        <!-- Gráfico Comparativo -->
                         <div class="col-span-2 card-bi p-5">
                             <h3 class="text-xs font-bold text-slate-600 uppercase mb-4">Comparativo Financeiro</h3>
                             <div class="h-64 w-full relative">
@@ -508,13 +517,10 @@
                                         <th class="p-4 text-center">% do Orçamento</th>
                                     </tr>
                                 </thead>
-                                <tbody id="finTableBody" class="divide-y divide-slate-100">
-                                    <!-- Preenchido via JS -->
-                                </tbody>
+                                <tbody id="finTableBody" class="divide-y divide-slate-100"></tbody>
                             </table>
                         </div>
                     </div>
-
                 </div>
             </div>
         </div>
@@ -526,7 +532,6 @@
         let db = { qualificacao: [], tecnico: [] };
         let currentScope = 'qualificacao';
         
-        // Configuração Financeira
         let financialChart = null;
 
         const PREDEFINED_REGIONS = [
@@ -556,7 +561,6 @@
             const viewDash = document.getElementById('viewDashboard');
             const viewFin = document.getElementById('viewFinanceiro');
             
-            // Resetar botões
             document.getElementById('tabQualificacao').classList.remove('active');
             document.getElementById('tabTecnico').classList.remove('active');
             document.getElementById('tabFinanceiro').classList.remove('active');
@@ -567,7 +571,6 @@
                 viewFin.classList.remove('hidden');
                 viewFin.classList.add('flex');
                 
-                // Trigger finance update
                 setTimeout(updateFinancials, 100);
             } else {
                 currentScope = tabName;
@@ -593,18 +596,14 @@
         // --- 2. GESTÃO FINANCEIRA ---
 
         function updateFinancials() {
-            // 1. Coletar Inputs
             const budget = parseFloat(document.getElementById('inputBudget').value) || 0;
             const costPerVisit = parseFloat(document.getElementById('inputCost').value) || 0;
 
-            // 2. Calcular Visitas Pendentes (Global: Quali + Tec)
-            // Visita pendente = Status não contém "realizada"
             let totalPending = 0;
             let regionStats = {};
 
             const processList = (list) => {
                 list.forEach(item => {
-                    // Verifica se o contrato está ativo (opcional, mas recomendado)
                     const isEncerrado = item.fim && parseDate(item.fim) < new Date();
                     if (isEncerrado) return;
 
@@ -618,8 +617,6 @@
 
                     if (pendingForStudent > 0) {
                         totalPending += pendingForStudent;
-                        
-                        // Agrupar por Região (ou Cidade se Região for vazia)
                         const key = item.regiao || item.cidade || "Indefinido";
                         if (!regionStats[key]) regionStats[key] = 0;
                         regionStats[key] += pendingForStudent;
@@ -630,11 +627,9 @@
             processList(db.qualificacao || []);
             processList(db.tecnico || []);
 
-            // 3. Cálculos
             const projectedCost = totalPending * costPerVisit;
             const balance = budget - projectedCost;
 
-            // 4. Atualizar UI
             document.getElementById('finPendingVisits').innerText = totalPending;
             document.getElementById('finProjectedCost').innerText = formatCurrency(projectedCost);
             
@@ -651,10 +646,7 @@
                 elBadge.className = "px-4 py-1 rounded-full text-xs font-bold uppercase bg-red-100 text-red-700";
             }
 
-            // 5. Atualizar Gráfico
             updateFinancialChart(budget, projectedCost);
-
-            // 6. Atualizar Tabela Regional
             updateFinancialTable(regionStats, costPerVisit, budget);
         }
 
@@ -665,7 +657,6 @@
         function updateFinancialChart(budget, expenses) {
             const ctx = document.getElementById('chartFinance');
             if (!ctx) return;
-
             if (financialChart) financialChart.destroy();
 
             financialChart = new Chart(ctx, {
@@ -675,22 +666,15 @@
                     datasets: [{
                         label: 'Valor (R$)',
                         data: [budget, expenses],
-                        backgroundColor: [
-                            '#10b981', // Emerald
-                            expenses > budget ? '#ef4444' : '#3b82f6' // Red se estourar, Blue se ok
-                        ],
+                        backgroundColor: ['#10b981', expenses > budget ? '#ef4444' : '#3b82f6'],
                         borderRadius: 6,
                         barThickness: 60
                     }]
                 },
                 options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
+                    responsive: true, maintainAspectRatio: false,
                     plugins: { legend: { display: false } },
-                    scales: {
-                        y: { beginAtZero: true, grid: { color: '#f1f5f9' } },
-                        x: { grid: { display: false } }
-                    }
+                    scales: { y: { beginAtZero: true, grid: { color: '#f1f5f9' } }, x: { grid: { display: false } } }
                 }
             });
         }
@@ -698,15 +682,7 @@
         function updateFinancialTable(stats, costPerVisit, totalBudget) {
             const tbody = document.getElementById('finTableBody');
             tbody.innerHTML = '';
-
-            // Converter objeto em array e ordenar por custo decrescente
-            const rows = Object.entries(stats)
-                .map(([region, visits]) => ({
-                    region,
-                    visits,
-                    cost: visits * costPerVisit
-                }))
-                .sort((a, b) => b.cost - a.cost);
+            const rows = Object.entries(stats).map(([region, visits]) => ({ region, visits, cost: visits * costPerVisit })).sort((a, b) => b.cost - a.cost);
 
             if (rows.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-400 text-xs">Nenhum dado pendente encontrado.</td></tr>`;
@@ -734,30 +710,21 @@
             });
         }
 
-        // --- 3. INICIALIZAÇÃO E LOGIN (Padrão) ---
+        // --- 3. INICIALIZAÇÃO E LOGIN ---
 
         function initUsers() {
             try {
                 const stored = localStorage.getItem('senacSupervisors');
-                if (stored && stored !== '[]') {
-                    users = JSON.parse(stored);
-                } else {
-                    users = [...DEFAULT_USERS];
-                    localStorage.setItem('senacSupervisors', JSON.stringify(users));
-                }
-            } catch (e) {
-                console.warn("Erro no localStorage", e);
-                users = [...DEFAULT_USERS];
-            }
+                if (stored && stored !== '[]') { users = JSON.parse(stored); } 
+                else { users = [...DEFAULT_USERS]; localStorage.setItem('senacSupervisors', JSON.stringify(users)); }
+            } catch (e) { users = [...DEFAULT_USERS]; }
             populateLoginRegions();
         }
 
         function populateLoginRegions() {
             const loginSel = document.getElementById('loginRegion');
             let options = '';
-            PREDEFINED_REGIONS.forEach(r => {
-                options += `<option value="${r}">${r}</option>`;
-            });
+            PREDEFINED_REGIONS.forEach(r => { options += `<option value="${r}">${r}</option>`; });
             if(loginSel) loginSel.innerHTML = '<option value="">Acesso Geral (Todas as Regiões)</option>' + options;
         }
 
@@ -786,36 +753,35 @@
                 const password = document.getElementById('loginPassword').value;
                 if (password === "supervisao2026") {
                     currentUser = { name: "Gestão Central", region: "", email: "admin@senac.br" };
-                    finishLogin();
+                    startLoadingSequence();
                 } else {
                     alert("Senha de acesso geral incorreta.");
                 }
             } else {
                 const email = document.getElementById('loginEmail').value.trim().toLowerCase();
                 if (!email) return alert("Por favor, digite seu e-mail.");
-                // Lógica simplificada de login regional
                 currentUser = { name: "Supervisor Regional", region: region, email: email };
-                finishLogin();
+                startLoadingSequence();
             }
+        }
+
+        // --- NOVA FUNÇÃO DE SEQUÊNCIA DE CARREGAMENTO ---
+        function startLoadingSequence() {
+            // 1. Esconde Login, Mostra Loader
+            document.getElementById('loginPage').style.display = 'none';
+            document.getElementById('globalLoader').classList.remove('hidden');
+            document.getElementById('loadingMessage').innerText = "Validando credenciais e permissões...";
+
+            // 2. Pequeno delay para garantir que o DOM atualizou antes de processar coisas pesadas
+            setTimeout(() => {
+                finishLogin();
+            }, 1000);
         }
 
         function finishLogin() {
             const displayRegion = currentUser.region || "Acesso Geral";
             document.getElementById('displayUserName').innerText = currentUser.name;
             document.getElementById('displayUserRegion').innerText = displayRegion;
-            
-            // ANIMAÇÃO DE SAÍDA DO LOGIN
-            const loginPage = document.getElementById('loginPage');
-            loginPage.classList.add('transition-opacity', 'duration-500', 'opacity-0');
-            setTimeout(() => {
-                loginPage.style.display = 'none';
-                
-                // EXIBE O PAINEL PRINCIPAL
-                const appContainer = document.getElementById('appContainer');
-                appContainer.classList.remove('hidden');
-                appContainer.classList.add('flex');
-                
-            }, 500);
             
             if (displayRegion !== "Acesso Geral" && displayRegion !== "") {
                 const filterReg = document.getElementById('filterRegiao');
@@ -826,6 +792,11 @@
                     document.getElementById('regionLockMsg').classList.remove('hidden');
                 }
             }
+
+            // Atualiza texto do loader
+            document.getElementById('loadingMessage').innerText = "Carregando dados do sistema...";
+            
+            // Tenta carregar os dados
             tryLoadDefault();
         }
 
@@ -841,9 +812,8 @@
         // --- 4. PROCESSAMENTO DE ARQUIVOS (Excel) ---
 
         async function tryLoadDefault() {
-            const spinner = document.getElementById('loadingSpinner');
-            if(spinner) spinner.classList.remove('hidden');
-            // Tentativa de carregar arquivo local padrão se existir no ambiente
+            document.getElementById('loadingMessage').innerText = "Buscando arquivos de dados...";
+            
             const candidates = ["Dados Gerais.xlsm", "Dados Gerais.xlsx", "dados gerais.xlsx"];
             let fileFound = false;
 
@@ -853,31 +823,38 @@
                     if (response.ok) {
                         const blob = await response.blob();
                         const file = new File([blob], filename);
-                        processFile({ files: [file] });
+                        processFile({ files: [file] }); // Chama processamento
                         fileFound = true;
                         break; 
                     }
                 } catch (e) { }
             }
-            if (!fileFound && spinner) spinner.classList.add('hidden');
+
+            // Se não achou arquivo, remove o loader e mostra o app vazio
+            if (!fileFound) {
+                finalizeLoading();
+            }
         }
 
         function processFile(input) {
             const file = input.files[0];
             if(!file) return;
             
-            const spinner = document.getElementById('loadingSpinner');
-            if(spinner) spinner.classList.remove('hidden');
-            
+            // Garante que o loader esteja visível se for upload manual
+            document.getElementById('globalLoader').classList.remove('hidden');
+            document.getElementById('loadingMessage').innerText = `Lendo arquivo: ${file.name}...`;
+
             const reader = new FileReader();
             
             reader.onload = function(e) {
+                // Timeout para não travar a UI enquanto processa o Excel
                 setTimeout(() => {
                     try {
                         const data = new Uint8Array(e.target.result);
+                        document.getElementById('loadingMessage').innerText = "Processando planilhas e fórmulas...";
+                        
                         const workbook = XLSX.read(data, {type: 'array'});
                         
-                        // Busca abas flexíveis
                         let sheetQuali = workbook.SheetNames.find(n => n.trim().toLowerCase() === "dados gerais");
                         if(!sheetQuali) sheetQuali = workbook.SheetNames.find(n => n.toLowerCase().includes("dados gerais") && !n.toLowerCase().includes("tec"));
                         let sheetTec = workbook.SheetNames.find(n => n.toLowerCase().includes("dados gerais") && (n.toLowerCase().includes("tec") || n.toLowerCase().includes("téc")));
@@ -889,20 +866,40 @@
                         if (sheetQuali) db.qualificacao = parseSheet(workbook.Sheets[sheetQuali]);
                         if (sheetTec) db.tecnico = parseSheet(workbook.Sheets[sheetTec]);
 
+                        document.getElementById('loadingMessage').innerText = "Finalizando visualização...";
                         switchTab(currentScope);
                         
-                        if(spinner) spinner.classList.add('hidden');
                         const btnText = document.getElementById('btnUploadText');
                         if(btnText) btnText.innerText = "Atualizado";
+
+                        finalizeLoading();
 
                     } catch(e) {
                         console.error(e);
                         alert("Erro ao processar arquivo. Verifique o formato.");
-                        if(spinner) spinner.classList.add('hidden');
+                        finalizeLoading();
                     }
-                }, 100);
+                }, 500);
             };
             reader.readAsArrayBuffer(file);
+        }
+
+        function finalizeLoading() {
+            const loader = document.getElementById('globalLoader');
+            const app = document.getElementById('appContainer');
+
+            loader.classList.add('transition-opacity', 'duration-500', 'opacity-0');
+            
+            setTimeout(() => {
+                loader.classList.add('hidden');
+                loader.classList.remove('opacity-0'); // Reset para reuso futuro
+                
+                app.classList.remove('hidden');
+                // Pequeno delay para a transição de opacidade
+                setTimeout(() => {
+                    app.classList.remove('opacity-0');
+                }, 50);
+            }, 500);
         }
 
         function parseSheet(worksheet) {
