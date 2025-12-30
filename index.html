@@ -12,13 +12,14 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
         
-        /* FIX DE ALTURA E SCROLLBAR */
+        /* MUDANÇA PRINCIPAL: Permitir rolagem na página inteira */
         html, body { 
-            height: 100vh; 
-            width: 100vw; 
+            min-height: 100vh; 
+            width: 100%; 
             margin: 0; 
             padding: 0; 
-            overflow: hidden; /* Impede scroll na página inteira, força scroll nos elementos internos */
+            overflow-y: auto; /* Habilita o scroll da página */
+            overflow-x: hidden;
             font-family: 'Inter', sans-serif; 
             background-color: #f8fafc; 
         }
@@ -65,25 +66,21 @@
         .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* SCROLLBAR REFORÇADA E VISÍVEL */
-        /* Firefox */
-        * { scrollbar-width: auto; scrollbar-color: #94a3b8 #e2e8f0; }
-        /* Chrome, Edge, Safari */
+        /* Estilização da Barra de Rolagem (Navegador) */
         ::-webkit-scrollbar {
-            width: 14px; /* Mais larga para facilitar o clique */
-            height: 14px;
+            width: 12px;
+            height: 12px;
         }
         ::-webkit-scrollbar-track {
             background: #f1f5f9;
-            border-left: 1px solid #e2e8f0;
         }
         ::-webkit-scrollbar-thumb {
-            background-color: #94a3b8; /* Cinza escuro para contraste */
+            background-color: #cbd5e1;
             border-radius: 6px;
-            border: 3px solid #f1f5f9; /* Cria um espaço em volta */
+            border: 3px solid #f1f5f9;
         }
         ::-webkit-scrollbar-thumb:hover {
-            background-color: #64748b;
+            background-color: #94a3b8;
         }
 
         /* Loader */
@@ -120,9 +117,17 @@
         #loginPage { z-index: 50; }
         #globalLoader { z-index: 60; }
         #appContainer { z-index: 10; }
+        
+        /* Sticky Header da Tabela */
+        .sticky-header th {
+            position: sticky;
+            top: 0;
+            z-index: 20;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
     </style>
 </head>
-<body class="text-slate-800 flex flex-col">
+<body class="text-slate-800">
 
     <!-- 1. TELA DE LOGIN -->
     <div id="loginPage" class="fixed inset-0 flex items-center justify-center bg-slate-100">
@@ -197,10 +202,10 @@
     </div>
 
     <!-- 3. ÁREA PRINCIPAL DO SISTEMA -->
-    <div id="appContainer" class="hidden flex-col h-full w-full opacity-0 transition-opacity duration-700">
+    <div id="appContainer" class="hidden flex-col w-full opacity-0 transition-opacity duration-700 min-h-screen">
         
         <!-- Header -->
-        <header class="bg-white border-b border-slate-200 flex-shrink-0 z-30 shadow-sm flex flex-col">
+        <header class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm flex flex-col">
             <!-- Top Bar -->
             <div class="h-16 flex items-center justify-between px-8">
                 <div class="flex items-center gap-4">
@@ -254,12 +259,12 @@
         </header>
 
         <!-- VIEWS -->
-        <div class="flex-1 overflow-hidden relative flex flex-col min-h-0">
+        <div class="flex-1 relative flex flex-col bg-slate-50/50">
             
             <!-- VIEW 1: DASHBOARD OPERACIONAL -->
-            <div id="viewDashboard" class="flex h-full w-full overflow-hidden">
+            <div id="viewDashboard" class="flex flex-col lg:flex-row w-full min-h-[calc(100vh-130px)]">
                 <!-- Sidebar Filtros -->
-                <aside class="w-80 bg-white border-r border-slate-200 flex flex-col z-20 overflow-y-auto shadow-[4px_0_24px_rgba(0,0,0,0.02)] flex-shrink-0">
+                <aside class="w-full lg:w-80 bg-white border-r border-slate-200 flex flex-col z-20 shadow-[4px_0_24px_rgba(0,0,0,0.02)] flex-shrink-0">
                     <div class="p-6 border-b border-slate-100 bg-slate-50/50">
                         <h3 class="font-bold text-slate-700 flex items-center gap-2 mb-5">
                             <div class="p-1.5 bg-white border border-slate-200 rounded-lg shadow-sm text-senac-orange">
@@ -329,9 +334,9 @@
                 </aside>
 
                 <!-- Conteúdo Principal Dashboard -->
-                <main class="flex-1 flex flex-col overflow-hidden bg-slate-50/50 relative min-h-0">
+                <main class="flex-1 flex flex-col relative p-6 gap-6">
                     <!-- KPIs e Gráficos -->
-                    <div class="p-6 pb-2 grid grid-cols-12 gap-6 h-auto flex-shrink-0">
+                    <div class="grid grid-cols-12 gap-6 h-auto flex-shrink-0">
                         <div class="col-span-12 lg:col-span-3 grid grid-cols-1 gap-4">
                             <div onclick="filterByStatus('all')" class="card-bi p-5 cursor-pointer relative overflow-hidden group border-l-4 border-l-senac-blue">
                                 <div class="flex justify-between items-start z-10 relative">
@@ -372,7 +377,7 @@
                         </div>
 
                         <!-- Gráficos -->
-                        <div class="col-span-12 md:col-span-4 lg:col-span-4 card-bi p-5 flex flex-col">
+                        <div class="col-span-12 md:col-span-4 lg:col-span-4 card-bi p-5 flex flex-col h-[280px]">
                             <h3 class="text-xs font-bold text-slate-600 uppercase mb-4 flex items-center gap-2">
                                 <i data-lucide="pie-chart" class="w-4 h-4 text-senac-orange"></i> Status Geral
                             </h3>
@@ -381,7 +386,7 @@
                             </div>
                         </div>
 
-                        <div class="col-span-12 md:col-span-5 lg:col-span-5 card-bi p-5 flex flex-col">
+                        <div class="col-span-12 md:col-span-5 lg:col-span-5 card-bi p-5 flex flex-col h-[280px]">
                             <h3 class="text-xs font-bold text-slate-600 uppercase mb-4 flex items-center gap-2">
                                 <i data-lucide="bar-chart-2" class="w-4 h-4 text-senac-blue"></i> Top Cidades/Regiões
                             </h3>
@@ -391,9 +396,9 @@
                         </div>
                     </div>
 
-                    <!-- Tabela -->
-                    <div class="flex-1 px-6 pb-6 overflow-hidden flex flex-col min-h-0">
-                        <div class="card-bi flex-1 flex flex-col overflow-hidden bg-white min-h-0 relative">
+                    <!-- Tabela (Agora com altura automática para permitir scroll da página) -->
+                    <div class="w-full">
+                        <div class="card-bi w-full bg-white flex flex-col">
                             <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-white rounded-t-2xl flex-shrink-0">
                                 <div class="flex items-center gap-3">
                                     <div class="p-2 bg-slate-100 rounded-lg text-slate-600">
@@ -412,10 +417,10 @@
                                 </div>
                             </div>
 
-                            <!-- ÁREA DE SCROLL DA TABELA - FIXADA -->
-                            <div class="flex-1 overflow-y-auto h-0 min-h-0 custom-scrollbar relative">
-                                <table class="w-full text-left border-collapse">
-                                    <thead class="bg-slate-50 sticky top-0 z-20 text-[11px] uppercase text-slate-500 font-bold tracking-wide shadow-sm">
+                            <!-- TABELA SEM RESTRIÇÃO DE ALTURA (A Página que rola) -->
+                            <div class="w-full overflow-x-auto">
+                                <table class="w-full text-left border-collapse sticky-header">
+                                    <thead class="bg-slate-50 text-[11px] uppercase text-slate-500 font-bold tracking-wide shadow-sm">
                                         <tr>
                                             <th class="p-4 w-[25%] bg-slate-50 border-b border-slate-200">Jovem / Turma</th>
                                             <th class="p-4 w-[20%] bg-slate-50 border-b border-slate-200">Empresa / Cidade</th>
@@ -440,6 +445,7 @@
                                 </table>
                             </div>
                             
+                            <!-- Paginação -->
                             <div class="p-3 border-t border-slate-100 flex justify-between items-center bg-slate-50 rounded-b-2xl px-6 flex-shrink-0 z-10">
                                 <span class="text-xs text-slate-500">Página <span id="pageDisplay" class="font-bold text-slate-700">1</span></span>
                                 <div class="flex gap-2">
